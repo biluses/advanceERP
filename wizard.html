@@ -1,0 +1,226 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,300' rel='stylesheet' type='text/css'>
+    <title>WYSIWUG Editor</title>
+    <link rel="stylesheet" href="css/foundation.css" />
+    <link href="css/foundation-icons/foundation-icons.css" rel="stylesheet" />
+    <script src="js/vendor/modernizr.js"></script>
+    <link href="css/style.css" rel="stylesheet" />
+    <link href="css/flat-icon/flaticon.css" rel="stylesheet" />
+    <link href="css/jquery.steps.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="row full-width wrapper">
+        <div class="large-12 columns content-bg">
+            <div id="top-menu">
+                <div class="row">
+                    <div class="large-2 medium-4 small-12 columns top-part-no-padding">
+                        <div class="logo-bg">
+                            <img src="img/logo.png" alt="logo"/>
+                            <i class="fi-list toggles" data-toggle="hide"></i>
+                        </div>
+                    </div>
+                    <div class="large-10 medium-8 small-12 columns top-menu">
+                        <div class="row">
+                            <div class="large-6 medium-6 small-12 columns">
+                                <div class="row">
+                                    <div class="large-8 columns">
+                                        <input id="Text1" type="text" class="search-text" placeholder="Search" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="large-4 medium-6 small-12 columns text-center">
+                                <div class="row">
+                                    <div class="medium-3 small-3 columns">
+                                        <div class="notification">
+                                            <i class="fi-mail"></i>
+                                            <span class="mail">4</span>
+                                        </div>
+                                    </div>
+                                    <div class="medium-3 small-3 columns">
+                                        <div class="notification">
+                                            <i class="fi-megaphone"></i>
+                                            <span class="megaphone">5</span>
+                                        </div>
+                                    </div>
+                                    <div class="medium-3 small-3 columns">
+                                        <img src="img/32.jpg" alt="picture" class="top-bar-picture" />
+                                    </div>
+                                    <div class="medium-3 small-3 columns">
+                                        <i class="fi-power power-off"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="no-padding">
+                    <div class="large-2 medium-12 small-12 columns">
+                        <ul class="side-nav">
+                            <li><a href="index.html"><i class="flaticon-dashboard1"></i>Dashboard</a></li>
+                            <li><a href="profile.html"><i class="flaticon-profile4"></i>Profile</a></li>
+                            <li><a href="staff.html"><i class="flaticon-businessman22"></i>Staff</a></li>
+                            <li><a href="inbox.html"><span class="flaticon-mailbox10"></span>Inbox</a></li>
+                            <li><a href="invoice.html"><i class="flaticon-invoice1"></i>Invoice</a></li>
+                            <li>
+                                <ul>
+                                    <li>
+                                        <dl class="accordion" data-accordion="myAccordionGroup">
+                                            <dd>
+                                                <a href="#panel1c"><i class="flaticon-forms"></i>Components</a>
+                                                <div id="panel1c" class="content">
+                                                    <ul>
+                                                        <li>
+                                                            <a href="general.html">General</a>
+                                                        </li>
+                                                        <li class="active">
+                                                            <a href="wizard.html">Wizard</a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="editor.html">Wysiwug Editor</a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </dd>
+                                        </dl>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><a href="login.html"><i class="flaticon-incoming4"></i>Login</a></li>
+                            <li><a href="register.html"><i class="flaticon-add58"></i>Register</a></li>
+                            <li><a href="pricing.html"><i class="flaticon-businessman63"></i>Pricing</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="large-10 medium-12 small-12 columns light-grey-bg-pattern">
+                    <div class="row">
+                        <div class="large-10 columns">
+                            <div class="page-name">
+                                <h3 class="left">Form Wizard</h3>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="wizards">
+                        <div class="row">
+                            <div class="large-12 columns">
+                                <div class="custom-panel">
+                                    <div class="custom-panel-heading">
+                                        <h4>Wizard</h4>
+                                    </div>
+                                    <div class="custom-panel-body">
+                                        <div id="wizard">
+                                            <h2>Personal</h2>
+                                            <section>
+                                                <div class="large-6 columns">
+                                                    <span>First name</span>
+                                                    <input id="Text2" type="text" placeholder="Enter first name" />
+                                                </div>
+                                                <div class="large-6 columns">
+                                                    <span>Last name</span>
+                                                    <input id="Text3" type="text" placeholder="Enter last name" />
+                                                </div>
+                                                <div class="large-6 columns">
+                                                    <span>Email</span>
+                                                    <input id="Text4" type="text" placeholder="Enter email" />
+                                                </div>
+                                                <div class="large-6 columns">
+                                                    <span>Website</span>
+                                                    <input id="Text5" type="text" placeholder="Enter website" />
+                                                </div>
+                                                
+                                            </section>
+
+                                            <h2>Contact</h2>
+                                            <section>
+                                                <div class="large-6 columns">
+                                                    <span>Home Telephone</span>
+                                                    <input id="Text6" type="text" placeholder="Enter telephone" />
+                                                </div>
+                                                <div class="large-6 columns">
+                                                    <span>Cell Telephone</span>
+                                                    <input id="Text7" type="text" placeholder="Enter Cell telephone" />
+                                                </div>
+                                                <div class="large-12 columns">
+                                                    <span>Address</span>
+                                                    <textarea id="Text8" placeholder="Enter address" ></textarea>
+                                                </div>
+                                            </section>
+
+                                            <h2>Billing</h2>
+                                            <section>
+                                                <div class="large-6 columns">
+                                                    <span>Address</span>
+                                                    <input id="Text9" type="text" placeholder="Enter Address" />
+                                                </div>
+                                                <div class="large-6 columns">
+                                                    <span>City</span>
+                                                    <input id="Text10" type="text" placeholder="Enter City" />
+                                                </div>
+                                                <div class="large-6 columns">
+                                                    <span>State</span>
+                                                    <input id="Text11" type="text" placeholder="Enter state" />
+                                                </div>
+                                                <div class="large-6 columns">
+                                                    <span>Country</span>
+                                                    <input id="Text12" type="text" placeholder="Enter Country" />
+                                                </div>
+                                                <div class="large-6 columns">
+                                                    <span>Email</span>
+                                                    <input id="Text15" type="text" placeholder="Enter email" />
+                                                </div>
+                                                <div class="large-6 columns">
+                                                    <div class="row">
+                                                        <div class="large-6 columns">
+                                                            <span>Zip code</span>
+                                                            <input id="Text13" type="text" placeholder="Enter zip code" />
+                                                        </div>
+                                                        <div class="large-6 columns">
+                                                            <span>Phone number</span>
+                                                            <input id="Text14" type="text" placeholder="Enter phone number" />
+                                                        </div>
+                                                     </div>
+                                                </div>
+                                            </section>                                           
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/vendor/jquery.js"></script>
+    <script src="js/foundation.min.js"></script>
+    <script src="js/jquery.cookie-1.3.1.js"></script>
+    <script src="js/jquery.steps.js"></script>
+
+    <script src="js/menu.js"></script>
+    <script>
+        $(document).foundation();
+        $(function () {
+
+
+            $("#wizard").steps({
+                headerTag: "h2",
+                bodyTag: "section",
+                transitionEffect: "slideLeft"
+            });
+            
+
+        });
+    </script>
+
+</body>
+</html>
+
+<!-- Localized -->
