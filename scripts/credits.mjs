@@ -9,8 +9,8 @@ if (!email || !Number.isInteger(amount) || amount === 0) {
   console.error("usage: pnpm credits <owner-email> <credits> [note]");
   process.exit(1);
 }
-const url = process.env.DATABASE_URL?.trim() || "file:./data/vitrina.db";
-const client = createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN?.trim() || undefined });
+const url = process.env.DATABASE_URL?.trim() || process.env.TURSO_DATABASE_URL?.trim() || "file:./data/vitrina.db";
+const client = createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN?.trim() || process.env.TURSO_AUTH_TOKEN?.trim() || undefined });
 const user = await client.execute({ sql: "select id from user where email = ?", args: [email] });
 const userId = user.rows[0]?.id;
 if (!userId) {

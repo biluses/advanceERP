@@ -18,7 +18,8 @@ const root = resolve(import.meta.dirname, "..");
 const dataDir = resolve(root, process.env.DATA_DIR?.trim() || "./data");
 const dryRun = args.has("--dry-run");
 
-const remoteDb = Boolean(process.env.DATABASE_URL?.trim() && !process.env.DATABASE_URL.trim().startsWith("file:"));
+const dbUrl = process.env.DATABASE_URL?.trim() || process.env.TURSO_DATABASE_URL?.trim() || "";
+const remoteDb = Boolean(dbUrl && !dbUrl.startsWith("file:"));
 if (remoteDb) {
   console.error("[wipe-local] DATABASE_URL points at a remote database. This script only resets local files; unset it or point it at a file: URL.");
   process.exit(1);
