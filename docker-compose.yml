@@ -1,0 +1,16 @@
+services:
+  vitrina:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      DATABASE_URL: file:/data/vitrina.db
+      DATA_DIR: /data
+      STORAGE_DRIVER: local
+    volumes:
+      - vitrina-data:/data
+    restart: unless-stopped
+
+volumes:
+  vitrina-data:

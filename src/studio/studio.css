@@ -1,0 +1,3977 @@
+/* Vitrina — scoped design system.
+   Identity: near-black studio, one lime accent reserved for selection,
+   primary action and liveness. Structure = hairline borders; elevation =
+   offset shadows. One face throughout: Inter, with tabular numerals where the
+   type carries measurement. */
+
+.vt {
+  --bg: #0a0a0b;
+  --rail: #101112;
+  --s1: #151719;
+  --s2: #1a1d1f;
+  --s3: #222629;
+  --s4: #2b3033;
+  --line: rgba(255, 255, 255, 0.06);
+  --line-2: rgba(255, 255, 255, 0.11);
+  --tx: #edefef;
+  --tx2: #a8aeaf;
+  --tx3: #878e90;
+  /* tx4 carries small metadata type, so it holds the 4.5:1 body floor on --rail;
+     --tx-off is the dimmer value reserved for disabled controls. */
+  --tx4: #7d8486;
+  --tx-off: #5c6365;
+  --accent: #d1fe17;
+  --accent-strong: #ddfe51;
+  --accent-ink: #141a02;
+  --accent-08: rgba(209, 254, 23, 0.08);
+  --accent-14: rgba(209, 254, 23, 0.14);
+  --accent-32: rgba(209, 254, 23, 0.32);
+  /* Smoked plate for chrome that sits on a returned picture. 0.7 holds the
+     4.5:1 ink floor even against a blown-out white frame; lighter did not. */
+  --plate: rgba(6, 9, 8, 0.7);
+  --plate-ink: rgba(246, 250, 248, 0.9);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.3), 0 16px 40px rgba(0, 0, 0, 0.35);
+  --shadow-3: 0 8px 24px rgba(0, 0, 0, 0.4), 0 32px 88px rgba(0, 0, 0, 0.52);
+  --glint: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  /* Deeper exponential ease-out — the scope indicator's travel. */
+  --ease-slide: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-ui: var(--font-vt-inter), ui-sans-serif, system-ui, sans-serif;
+  --danger: #ff8d78;
+  --danger-bg: rgba(255, 141, 120, 0.1);
+  --danger-line: rgba(255, 141, 120, 0.28);
+
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--tx);
+  background: var(--bg);
+  color-scheme: dark;
+  caret-color: var(--accent);
+  accent-color: var(--accent);
+  -webkit-font-smoothing: antialiased;
+}
+
+.vt *,
+.vt *::before,
+.vt *::after {
+  box-sizing: border-box;
+}
+
+/* Element defaults are zeroed rather than overridden one rule at a time: every
+   size, weight and gap in this file is stated by the component that owns it,
+   so a leftover UA margin only ever fights it. :where() keeps the whole reset
+   at zero specificity, so those component rules win without qualification. */
+:where(.vt *, .vt *::before, .vt *::after) {
+  margin: 0;
+  padding: 0;
+}
+:where(.vt :is(h1, h2, h3, h4, h5, h6)) {
+  font-size: inherit;
+  font-weight: inherit;
+}
+:where(.vt :is(ul, ol)) {
+  list-style: none;
+}
+:where(.vt :is(img, svg, video)) {
+  display: block;
+}
+:where(.vt :is(img, video)) {
+  max-width: 100%;
+  height: auto;
+}
+
+.vt ::selection {
+  background: rgba(209, 254, 23, 0.28);
+  color: #fbfef1;
+}
+
+/* :where() keeps the reset at zero extra specificity so component classes win. */
+.vt :where(button) {
+  font-family: inherit;
+  border: 0;
+  background: none;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+.vt :where(button:disabled) {
+  cursor: default;
+}
+.vt input,
+.vt textarea {
+  font-family: inherit;
+  color: inherit;
+}
+.vt :focus-visible {
+  outline: 2px solid var(--accent-32);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Themed browser scroll surfaces */
+.vt ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.vt ::-webkit-scrollbar-thumb {
+  background: var(--s3);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.vt ::-webkit-scrollbar-thumb:hover {
+  background: var(--s4);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+.vt ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.vt .vt-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--s3) transparent;
+}
+
+/* ---------- keyframes ---------- */
+
+@keyframes vt-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes vt-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes vt-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* The way out is not the way in reversed: it leaves in two thirds the time,
+   on an accelerating curve, and travels less. An exit that mirrors its
+   entrance reads mechanical — a dismissal should feel decided. */
+@keyframes vt-pop-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.985) translateY(4px);
+  }
+}
+@keyframes vt-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-tile {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* A sweep that loops has to close on itself. The band pattern repeats every
+   tile width and the travel is exactly one tile, so the last frame renders
+   identically to the first — the light never stops, never teleports back to
+   the start, and never leaves a stretch of dead plate behind it. Linear for
+   the same reason: an eased loop coasts to a standstill at the seam and has to
+   set off again from zero. The softness comes from the band's own falloff, not
+   from the timing curve. Runs on `transform`, so the compositor carries it and
+   a grid full of pending tiles costs no main-thread paint. */
+@keyframes vt-sheen {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes vt-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes vt-arrive {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+    filter: brightness(1.5) saturate(0.6);
+  }
+  55% {
+    opacity: 1;
+    filter: brightness(1.12) saturate(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+/* Each instrument arrives from the edge it is docked to. */
+@keyframes vt-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* The toolbar takes the composer's place, so it arrives with the weight of an
+   instrument rather than the flicker of a toast: up from the dock's own edge,
+   deep ease-out, and out again in half the time on the way back. */
+@keyframes vt-selbar-in {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+    scale: 0.9;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+@keyframes vt-selbar-out {
+  from {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+  to {
+    opacity: 0;
+    translate: 0 8px;
+    scale: 0.96;
+  }
+}
+/* Each control resolves out of the blur rather than sliding in — the bar reads
+   as one plate coming into focus, not seven chips flying together. Written on
+   `translate` and `scale` so a control's own press still lands: the filled
+   state of a transform animation would outrank it. */
+@keyframes vt-selitem {
+  from {
+    opacity: 0;
+    translate: 0 9px;
+    scale: 0.88;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+    filter: blur(0);
+  }
+}
+/* The count is a number that changed, not a label that redrew. */
+@keyframes vt-count {
+  from {
+    opacity: 0;
+    translate: 0 -0.5em;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes vt-keep {
+  0% {
+    transform: scale(1);
+  }
+  36% {
+    transform: scale(1.34);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes vt-drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes vt-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes vt-spin-once {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(180deg);
+  }
+}
+
+/* ---------- shell ---------- */
+
+.vt-shell {
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+  position: relative;
+}
+
+/* ---------- top bar ---------- */
+
+/* Two floating instruments on one baseline, held off every edge the way the
+   composer is: the scope pill and the platform lamp side by side, centred as a
+   pair over the work. Nothing spans the width — the runs are the ground. */
+.vt-topbar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px 0;
+  pointer-events: none;
+}
+.vt-bar {
+  pointer-events: auto;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  padding: 0 5px;
+  background: var(--s2);
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  box-shadow: var(--shadow-2), var(--glint);
+}
+
+/* The studio's page heading; the bar carries scope, not brand. */
+.vt-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- scope tabs ---------- */
+
+.vt-tabs {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+/* One plate travels between the three scopes and morphs to each label's real
+   width, so a switch reads as a single continuous move rather than three
+   independent fades. Measured in Topbar.tsx — equal columns would pad the
+   short labels out to match "Assets". */
+.vt-thumb {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--thumb-w);
+  transform: translate3d(var(--thumb-x), 0, 0);
+  border-radius: 10px;
+  background: var(--s3);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--shadow-1), var(--glint);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.44s var(--ease-slide),
+    width 0.44s var(--ease-slide),
+    opacity 0.2s ease;
+}
+.vt-thumb[data-ready="true"] {
+  opacity: 1;
+}
+.vt-tab {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-size: 12.5px;
+  font-weight: 550;
+  letter-spacing: -0.005em;
+  color: var(--tx2);
+  transition:
+    color 0.22s ease,
+    background 0.15s ease;
+}
+.vt-tab svg {
+  flex-shrink: 0;
+  color: var(--tx3);
+  transition: color 0.22s ease;
+}
+.vt-tab:hover {
+  color: var(--tx);
+}
+.vt-tab:hover svg {
+  color: var(--tx2);
+}
+.vt-tab:not([aria-selected="true"]):hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+.vt-tab:active {
+  transform: scale(0.97);
+}
+.vt-tab[aria-selected="true"] {
+  color: var(--tx);
+}
+.vt-tab[aria-selected="true"] svg {
+  color: var(--accent);
+}
+
+/* ---------- platform lamp ---------- */
+
+/* Its own pill, but the control inside it is drawn as a scope tab is — same
+   height, plate and type, so the two instruments read as one set. */
+.vt-key {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-size: 12.5px;
+  font-weight: 550;
+  letter-spacing: -0.005em;
+  color: var(--tx2);
+  transition:
+    color 0.22s ease,
+    background 0.15s ease;
+}
+.vt-key:hover {
+  color: var(--tx);
+  background: rgba(255, 255, 255, 0.035);
+}
+.vt-key:active {
+  transform: scale(0.97);
+}
+.vt-key svg {
+  flex-shrink: 0;
+  color: var(--tx3);
+  transition: color 0.22s ease;
+}
+.vt-key:hover svg {
+  color: var(--tx2);
+}
+.vt-key[data-ready="true"] svg,
+.vt-key[data-busy="true"] svg {
+  color: var(--accent);
+}
+.vt-key[data-busy="true"] {
+  color: var(--tx);
+}
+/* Idle is a steady lamp; the pulse is reserved for a job actually running. */
+.vt-lamp {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tx4);
+  transition: background 0.25s ease;
+}
+.vt-key[data-busy="true"] .vt-lamp {
+  background: var(--accent);
+  animation: vt-pulse 2.4s ease-in-out infinite;
+}
+
+/* ---------- main ---------- */
+
+.vt-main {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- gallery ---------- */
+
+.vt-gallery {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Top padding clears the floating bar; the mask dissolves runs into the
+     ground under it instead of cutting them against the chrome. */
+  --vt-fade: 62px;
+  padding: 72px 20px calc(var(--vt-dock-h, 138px) + 8px);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--vt-fade)
+  );
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--vt-fade));
+}
+.vt-grid-window {
+  position: relative;
+  width: 100%;
+}
+.vt-grid {
+  display: grid;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  grid-template-columns: repeat(var(--vt-cols, 4), minmax(0, 1fr));
+  column-gap: 14px;
+  align-items: stretch;
+  justify-items: stretch;
+}
+
+.vt-tile {
+  break-inside: avoid;
+  display: block;
+  width: 100%;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  background: var(--s1);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
+  text-align: left;
+  isolation: isolate;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 220px;
+  transition:
+    border-color 0.2s ease,
+    border-width 0.26s var(--ease-slide),
+    box-shadow 0.25s var(--ease);
+  animation: vt-tile 0.32s var(--ease) both;
+  animation-delay: var(--d, 0s);
+}
+.vt-tile:hover {
+  border-color: var(--line-2);
+  box-shadow: var(--shadow-2);
+}
+/* The press belongs to the control that opens the card, not to the card that
+   now also carries its own actions. */
+.vt-tile:has(.vt-tile-open:active) {
+  transform: scale(0.99);
+}
+.vt-tile:has(.vt-tile-open:focus-visible) {
+  border-color: var(--line-2);
+  box-shadow: var(--shadow-2), 0 0 0 2px var(--accent-32);
+}
+.vt-tile-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  animation: vt-fade 0.4s ease;
+}
+
+/* The whole card opens. It is a transparent plate rather than a wrapper, so
+   the caption keeps painting through it and the actions stack above it. */
+.vt-tile-open {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  border-radius: inherit;
+}
+/* The ring is drawn by the card — an outline on an inset-0 child is clipped
+   by the card's own overflow. */
+.vt-tile-open:focus-visible {
+  outline: none;
+}
+
+/* Keep, reuse and delete ride the corner opposite the duration badge, on the
+   same smoked plate the badge uses so they read as one family over any
+   picture the platform returns. */
+.vt-tile-acts {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  z-index: 2;
+  display: flex;
+  gap: 5px;
+}
+.vt-tile-act {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--plate);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: var(--plate-ink);
+  opacity: 0;
+  transform: translateY(-4px) scale(0.94);
+  /* An invisible control is not a clickable one; keyboard focus is unaffected
+     by this, so the rail stays reachable by tab. */
+  pointer-events: none;
+  transition:
+    opacity 0.16s ease,
+    transform 0.2s var(--ease),
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.vt-tile:hover .vt-tile-act,
+/* Keyboard focus, not focus of any kind: a mouse click leaves its button
+   focused, and `:focus-within` would hold the whole rail open after the
+   pointer has gone — the card would sit there looking hovered until something
+   else took focus. `:focus-visible` is exactly the distinction the browser
+   already draws, so tabbing still opens the rail. */
+.vt-tile:has(:focus-visible) .vt-tile-act,
+/* A save is liveness, and liveness is never hidden: the rail holds open until
+   the file lands, so the pointer can leave the card without the spinner going
+   with it. */
+.vt-tile[data-saving] .vt-tile-act,
+/* A kept run says so without being hovered — the mark is the state. */
+.vt-tile-act[data-on="true"] {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+/* The shared spinner's track is drawn for the studio's own surfaces; on the
+   card's smoked plate it takes the plate's ink so the ring reads over any
+   picture the platform returns. */
+.vt-tile-act .vt-spinner {
+  width: 15px;
+  height: 15px;
+  border-color: rgba(255, 255, 255, 0.24);
+  border-top-color: var(--accent);
+}
+.vt-tile-act:hover {
+  background: rgba(9, 13, 12, 0.86);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #f5faf8;
+}
+.vt-tile-act:active {
+  transform: scale(0.92);
+}
+.vt-tile-act[data-on="true"] {
+  color: var(--accent);
+  border-color: var(--accent-32);
+}
+.vt-tile-act[data-on="true"]:hover {
+  background: rgba(9, 13, 12, 0.86);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+.vt-tile-act--danger:hover {
+  background: rgba(40, 14, 11, 0.88);
+  border-color: var(--danger-line);
+  color: var(--danger);
+}
+/* One beat, fired from the click and never from mount. */
+.vt-tile-act[data-beat] svg {
+  animation: vt-keep 0.34s var(--ease);
+}
+
+/* ---------- picking runs ---------- */
+
+/* The mark sits top-left, where a selection is looked for, and opposite the
+   card's own three actions so the two rails never argue. It is offered on
+   hover and stands permanently once anything in the grid is picked — a
+   half-selected grid has to show which cards are the other half. */
+.vt-pick {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  translate: -4px 0;
+  scale: 0.9;
+  pointer-events: none;
+  transition:
+    opacity 0.16s ease,
+    translate 0.24s var(--ease-slide),
+    scale 0.24s var(--ease-slide);
+}
+.vt-tile:hover .vt-pick,
+.vt-tile:has(:focus-visible) .vt-pick,
+.vt-grid[data-selecting="true"] .vt-pick {
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
+  pointer-events: auto;
+}
+/* Same smoked plate as the badge and the action rail, so the three families of
+   chrome the card can carry read as one material over any returned picture. */
+.vt-pick-box {
+  width: 21px;
+  height: 21px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--plate);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  color: transparent;
+  transition:
+    background 0.18s var(--ease),
+    border-color 0.18s var(--ease),
+    color 0.1s ease,
+    scale 0.16s var(--ease);
+}
+.vt-pick-box svg {
+  opacity: 0;
+  scale: 0.4;
+  transition:
+    opacity 0.1s ease,
+    scale 0.26s var(--ease-slide);
+}
+.vt-pick:hover .vt-pick-box {
+  background: rgba(9, 13, 12, 0.86);
+  border-color: rgba(255, 255, 255, 0.62);
+}
+.vt-pick:active .vt-pick-box {
+  scale: 0.88;
+}
+/* Accent is the studio's selection colour; this is the one place it marks a
+   set rather than a single control. */
+.vt-pick[aria-checked="true"] .vt-pick-box {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.vt-pick[aria-checked="true"]:hover .vt-pick-box {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+.vt-pick[aria-checked="true"] .vt-pick-box svg {
+  opacity: 1;
+  scale: 1;
+}
+
+/* A picked card takes the accent frame and the picture pulls in behind it.
+   The set-back is a fixed inset, never a scale: this grid holds every ratio the
+   catalog can return, and a proportional shrink sets a 1:1 card back twice as
+   far as a 16:9 one — the same gesture reading as a different amount on every
+   card. The border grows inward instead, and `box-sizing: border-box` keeps the
+   slot identical, so the picture pulls in by exactly 3px whatever its shape. */
+.vt-tile[data-picked="true"] {
+  border-width: 4px;
+  border-color: var(--accent);
+  box-shadow: var(--shadow-2);
+}
+/* The picked frame is already accent, so the focus ring needs a dark gap to
+   read as a second mark rather than a thicker first one — the same offset the
+   studio's global focus outline carries. */
+.vt-tile[data-picked="true"]:has(.vt-tile-open:focus-visible) {
+  box-shadow:
+    var(--shadow-2),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent-32);
+}
+.vt-tile[data-picked="true"] .vt-tile-media {
+  filter: brightness(0.82) saturate(0.94);
+}
+
+/* While a set is being assembled the per-card actions step aside: reuse,
+   delete and keep all act on one run, and the toolbar below now owns the
+   other three. */
+.vt-grid[data-selecting="true"] .vt-tile-acts {
+  opacity: 0;
+  translate: 0 -4px;
+  pointer-events: none;
+  transition:
+    opacity 0.16s ease,
+    translate 0.2s var(--ease);
+}
+/* The duration badge shares the corner the mark takes, so it makes room for
+   it rather than sitting under it. */
+.vt-tile-badge {
+  transition: translate 0.26s var(--ease-slide);
+}
+.vt-tile:hover .vt-tile-badge,
+.vt-grid[data-selecting="true"] .vt-tile-badge {
+  translate: 30px 0;
+}
+
+/* The run that just landed gets its own arrival, once — every other tile
+   uses the shared entrance. */
+.vt-tile[data-fresh="true"] {
+  animation: vt-arrive 0.62s var(--ease) both;
+}
+
+.vt-tile--failed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: vt-tile 0.32s var(--ease) both;
+}
+.vt-fail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 20px;
+  text-align: center;
+  max-width: 320px;
+}
+.vt-fail-ic {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.vt-fail-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.vt-fail-why {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--tx2);
+  padding-bottom: 4px;
+}
+.vt-grain {
+  position: absolute;
+  inset: 0;
+  background-image: var(--vt-grain);
+  background-size: 128px 128px;
+  opacity: 0.28;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+.vt-tile-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: var(--plate);
+  backdrop-filter: blur(6px);
+  color: var(--plate-ink);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.vt-tile-badge svg {
+  display: block;
+}
+/* Offered on hover on the same terms as the action rail opposite it, scrim
+   and all: a card at rest is the picture and nothing else. */
+.vt-tile-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  padding: 40px 12px 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  /* Two lines of prompt stand where a one-line name never did, so the ramp
+     reaches its ground by the time the words start rather than at the very
+     bottom edge — a bright frame would otherwise read through them. */
+  background: linear-gradient(transparent, rgba(4, 7, 6, 0.58) 34%, rgba(4, 7, 6, 0.88));
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.16s ease,
+    transform 0.24s var(--ease);
+}
+.vt-tile:hover .vt-tile-caption,
+.vt-tile:has(:focus-visible) .vt-tile-caption {
+  opacity: 1;
+  transform: none;
+}
+/* A prompt is a sentence, not a name: it wraps to two lines before it clips, at
+   the weight a sentence is read at rather than the weight a title is. */
+.vt-tile-prompt {
+  max-width: 100%;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.38;
+  letter-spacing: -0.006em;
+  color: #f5faf8;
+  text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+.vt-tile-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+/* The badge, the action rail and the pick box all wear the smoked plate; these
+   join them rather than inventing a fourth material. They skip the blur those
+   three carry — the scrim already grounds them, so the filter would buy
+   nothing and cost a compositor layer on every card in the grid. */
+.vt-tile-fact {
+  padding: 3px 7px;
+  line-height: 1.3;
+  border-radius: 7px;
+  background: var(--plate);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: var(--plate-ink);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* The one name in a row of numbers, and the fact a viewer scans the row for: it
+   leads, and carries the ink the prompt above it does. */
+.vt-tile-fact--model {
+  color: #f5faf8;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.vt-skeleton {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  /* The plate rests and the light that crosses it is a layer of its own, so a
+     wait reads as one lamp travelling over a surface rather than the whole
+     tile changing colour. It enters on the returned tile's exact animation:
+     when the run lands, the picture takes the skeleton's place without a
+     second arrival. */
+  background: var(--s1);
+  animation: vt-tile 0.32s var(--ease) both;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 220px;
+}
+/* The original band, unchanged in colour and in width — s1 out to s3 over a
+   quarter of the tile — but laid down twice, one tile-width apart, so that as a
+   peak leaves the right edge the next is already entering from the left and the
+   plate is never idle between passes. */
+.vt-skeleton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  background-image: linear-gradient(
+    100deg,
+    var(--s1) 24%,
+    var(--s3) 50%,
+    var(--s1) 76%
+  );
+  background-size: 50% 100%;
+  background-repeat: repeat-x;
+  animation: vt-sheen 2.8s linear infinite;
+}
+/* There are only fifteen levels between s1 and s3, so on a 900px tile the ramp
+   quantises into 8-bit steps some seventeen pixels wide — flat vertical stripes
+   that a slow sweep then marches across, which is the opposite of smooth and is
+   worse again on a six-bit panel. A static grain a couple of levels deep is the
+   standard answer: it puts the error below the step, the contours dissolve, and
+   nothing about the band's colour or shape has to change. It stays still while
+   the band moves, so it reads as the plate's surface and not as film grain. */
+.vt-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='vt-dither'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23vt-dither)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+/* The band is opaque, and an absolutely positioned pseudo-element paints over
+   in-flow text by default — so the type has to be raised or the sweep would
+   simply cover it. Raised above the grain too, which is there to dither the
+   plate, not the lettering. */
+.vt-skeleton-label,
+.vt-skeleton-clock {
+  position: relative;
+  z-index: 1;
+}
+.vt-skeleton-label {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tx3);
+}
+.vt-skeleton-clock {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--tx4);
+}
+
+/* ---------- empty gallery ---------- */
+
+/* Nothing is drawn behind this: the studio's ground is black, and a scope with
+   no runs should read as unexposed rather than as scenery. Weight comes from
+   the type and from three real prompts. */
+.vt-empty {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 4px 0 20px;
+}
+.vt-empty-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  max-width: 544px;
+  padding: 0 8px;
+  text-align: center;
+  animation: vt-rise 0.42s var(--ease-slide) both;
+}
+.vt-empty-title {
+  font-size: 20px;
+  font-weight: 620;
+  letter-spacing: -0.024em;
+  line-height: 1.25;
+  color: var(--tx);
+  text-wrap: balance;
+}
+.vt-empty-hint {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--tx3);
+  max-width: 42ch;
+  text-wrap: balance;
+}
+
+/* Sample prompts, offered where the visitor has nothing to start from.
+   Each carries the seeded light of its own hash — the
+   device the studio already uses for a run whose picture has not arrived. */
+.vt-empty-starters {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  margin: 13px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.vt-starter {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 10px 12px 10px 10px;
+  border-radius: 13px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.018);
+  border: 1px solid var(--line);
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s var(--ease);
+}
+.vt-starter:hover {
+  background: var(--s1);
+  border-color: var(--line-2);
+}
+.vt-starter:active {
+  transform: scale(0.994);
+}
+.vt-starter-thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 58px;
+  border-radius: 7px;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    var(--shadow-1);
+}
+.vt-starter-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--tx2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.16s ease;
+}
+.vt-starter:hover .vt-starter-text,
+.vt-starter:focus-visible .vt-starter-text {
+  color: var(--tx);
+}
+.vt-starter-go {
+  flex-shrink: 0;
+  display: flex;
+  color: var(--tx3);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 0.16s ease,
+    transform 0.2s var(--ease);
+}
+.vt-starter:hover .vt-starter-go,
+.vt-starter:focus-visible .vt-starter-go {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- composer ---------- */
+
+/* Deletion's receipt, in the strip the composer already reserves for the
+   generation error — the studio gains no second floating layer. */
+.vt-undo {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 9px 10px 9px 14px;
+  border-radius: 14px;
+  background: var(--s2);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--shadow-2), var(--glint);
+  animation: vt-rise 0.22s var(--ease);
+}
+/* The window to change your mind, drawn rather than guessed at. Its duration
+   is set inline from the same constant that clears the record. */
+.vt-undo-drain {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  transform-origin: left;
+  background: var(--tx4);
+  opacity: 0.5;
+  animation: vt-drain linear forwards;
+}
+.vt-undo-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--tx2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vt-undo-act {
+  flex-shrink: 0;
+  height: 28px;
+  padding: 0 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  background: var(--s3);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--tx);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.vt-undo-act:hover {
+  background: var(--s4);
+  border-color: var(--line-2);
+}
+.vt-undo-act:active {
+  transform: scale(0.97);
+}
+
+.vt-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 10px 10px 10px 13px;
+  border-radius: 14px;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-line);
+  animation: vt-rise 0.22s var(--ease);
+}
+/* In the dock the strip floats over returned pictures, so the tint alone would
+   leave the message reading off the gallery. There it rides the same smoked
+   plate as the rest of the chrome that sits on a picture. */
+.vt-composer-wrap .vt-alert {
+  background: linear-gradient(var(--danger-bg), var(--danger-bg)), var(--plate);
+  backdrop-filter: blur(24px) saturate(1.15);
+  box-shadow: var(--shadow-2);
+}
+.vt-alert-ic {
+  flex-shrink: 0;
+  color: var(--danger);
+  display: flex;
+}
+.vt-alert-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--tx);
+}
+
+.vt-icon-btn--ghost {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border-color: transparent;
+}
+/* Small visible target, full-size reach. */
+.vt-icon-btn--ghost::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+
+/* ---------- attached inputs ---------- */
+
+/* Attachments sit above the words, read as a contact sheet, and carry their
+   role on a slate tag — a 56px tile has no room for "Start frame". */
+.vt-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 13px;
+  margin: 0;
+  padding: 14px 12px 0;
+  list-style: none;
+}
+.vt-strip-item {
+  position: relative;
+  animation: vt-pop 0.2s var(--ease);
+}
+.vt-strip-tile {
+  position: relative;
+  display: block;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--s1);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    var(--shadow-1);
+}
+.vt-strip-thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Video and audio uploads have no still to show, so the drawn mark stands in. */
+.vt-strip-glyph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 10px;
+  color: var(--tx3);
+}
+.vt-strip-tag {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 10px 4px 4px;
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  text-align: center;
+  color: #edf2f0;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.74));
+}
+.vt-strip-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tx2);
+  background: var(--s4);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px var(--line-2);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s var(--ease);
+}
+.vt-strip-remove::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+}
+.vt-strip-remove:hover {
+  background: var(--danger-bg);
+  color: var(--danger);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px var(--danger-line);
+}
+.vt-strip-remove:active {
+  transform: scale(0.96);
+}
+
+/* The dock floats over the runs the way the top bar does. In flow it reserved
+   a black strip that cut every bottom picture off; floating, the gallery is
+   the ground edge to edge and the composer sits on it. The gallery cannot read
+   the dock's height from layout any more, so Composer publishes it as
+   --vt-dock-h. */
+.vt-dock {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 30;
+  padding: 10px 20px 22px;
+  pointer-events: none;
+}
+.vt-composer-wrap {
+  pointer-events: auto;
+  position: relative;
+  max-width: 940px;
+  margin: 0 auto;
+}
+.vt-composer {
+  /* One radius for every control the composer holds — the attachment, each
+     pill, the stepper and the primary action all read as the same family. */
+  --ctl-r: 10px;
+  background: var(--s2);
+  border: 1px solid var(--line);
+  /* 24 = the 12px radius of every control on the rail plus the row's 12px
+     inset: the corners stay concentric. */
+  border-radius: 24px;
+  box-shadow: var(--shadow-2), var(--glint);
+  display: flex;
+  flex-direction: column;
+  transition:
+    border-color 0.2s var(--ease),
+    box-shadow 0.2s var(--ease),
+    opacity 0.18s var(--ease),
+    translate 0.34s var(--ease-slide),
+    scale 0.34s var(--ease-slide);
+}
+/* The field lights as one surface. The textarea itself keeps no ring — the
+   global one was clipped by the composer and read as a stray green hairline. */
+.vt-composer:has(.vt-prompt:focus) {
+  border-color: var(--accent-32);
+  box-shadow: var(--shadow-2), var(--glint), 0 0 0 3px var(--accent-08);
+}
+
+/* ---------- the dock's second instrument ---------- */
+
+/* One slot, two instruments, laid on the same grid cell and aligned to the
+   same bottom edge: the dock never changes height, the gallery never reflows
+   under it, and the toolbar rises exactly where the composer's rail stood.
+   The composer stays mounted through it — an attached input and a half-typed
+   prompt survive a trip through selection. */
+.vt-swap {
+  display: grid;
+  /* The track is pinned to the column rather than sized to its widest item:
+     the toolbar's controls do not shrink, and an auto track would let their
+     combined min-content width push the dock past a narrow viewport. */
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+}
+.vt-swap > * {
+  grid-area: 1 / 1;
+}
+.vt-dock[data-selecting="true"] .vt-composer {
+  opacity: 0;
+  translate: 0 10px;
+  scale: 0.97;
+  pointer-events: none;
+}
+/* The wrap spans the whole column, so while the toolbar holds a fraction of it
+   the rest of that column hands its clicks back to the gallery. The banner
+   strip keeps its own. */
+.vt-dock[data-selecting="true"] .vt-composer-wrap {
+  pointer-events: none;
+}
+.vt-dock[data-selecting="true"] :is(.vt-undo, .vt-alert) {
+  pointer-events: auto;
+}
+
+/* The toolbar is a plate, not a panel: it floats over returned pictures the
+   way the card chrome does, so it carries the same smoked backdrop rather than
+   the composer's opaque slate. */
+.vt-selbar {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 8px;
+  border-radius: 20px;
+  background: rgba(19, 22, 24, 0.88);
+  /* Saturation just past 1 keeps the plate alive over a returned picture
+     without letting that picture tint the studio's chrome. */
+  backdrop-filter: blur(24px) saturate(1.15);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--shadow-3), var(--glint);
+  pointer-events: none;
+  animation: vt-selbar-out 0.2s var(--ease) both;
+}
+.vt-selbar[data-on="true"] {
+  pointer-events: auto;
+  animation: vt-selbar-in 0.42s var(--ease-slide) both;
+}
+/* The bar does not arrive as one block — each instrument resolves out of the
+   blur a beat after the one before it, left to right, the way the toolbar
+   would be read. */
+.vt-selbar[data-on="true"] > * {
+  animation: vt-selitem 0.38s var(--ease-slide) both;
+}
+.vt-selbar[data-on="true"] > :nth-child(2) {
+  animation-delay: 0.03s;
+}
+.vt-selbar[data-on="true"] > :nth-child(3) {
+  animation-delay: 0.055s;
+}
+.vt-selbar[data-on="true"] > :nth-child(4) {
+  animation-delay: 0.08s;
+}
+.vt-selbar[data-on="true"] > :nth-child(5) {
+  animation-delay: 0.105s;
+}
+.vt-selbar[data-on="true"] > :nth-child(6) {
+  animation-delay: 0.13s;
+}
+.vt-selbar[data-on="true"] > :nth-child(7) {
+  animation-delay: 0.155s;
+}
+
+.vt-selbar-count {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  padding: 0 6px;
+  font-size: 13px;
+  color: var(--tx2);
+  white-space: nowrap;
+}
+.vt-selbar-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vt-selbar-n {
+  display: inline-block;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--tx);
+  animation: vt-count 0.34s var(--ease-slide);
+}
+
+/* What is held, not how many: three sheets deep, newest on top, so adding a
+   run to the set is visible without reading the number. */
+.vt-selstack {
+  position: relative;
+  flex: none;
+  width: 37px;
+  height: 26px;
+}
+/* The sheets are cut apart by a dark ring rather than a light one: two pale
+   results stacked read as a single smear behind a hairline of white. */
+.vt-selchip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 26px;
+  height: 26px;
+  overflow: hidden;
+  border-radius: 7px;
+  box-shadow:
+    0 0 0 1.5px rgba(4, 6, 6, 0.9),
+    0 1px 4px rgba(0, 0, 0, 0.55);
+  background-size: cover;
+  translate: calc(var(--z) * 5px) 0;
+  scale: calc(1 - var(--z) * 0.1);
+  filter: brightness(calc(1 - var(--z) * 0.24));
+  z-index: calc(3 - var(--z));
+  animation: vt-pop 0.26s var(--ease-slide);
+}
+.vt-selchip img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.vt-selchip-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.vt-selbar-rule {
+  flex: none;
+  width: 1px;
+  height: 22px;
+  margin: 0 2px;
+  background: var(--line-2);
+}
+.vt-selbar-slot {
+  display: flex;
+  flex: none;
+}
+
+.vt-selact {
+  height: 36px;
+  min-width: 36px;
+  flex: none;
+  padding: 0 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid transparent;
+  color: var(--tx);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s var(--ease);
+}
+.vt-selact--wide {
+  padding: 0 13px 0 11px;
+}
+.vt-selact:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--line-2);
+}
+.vt-selact:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.vt-selact:disabled {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--tx-off);
+}
+.vt-selact[data-on="true"] {
+  background: var(--accent-08);
+  border-color: var(--accent-32);
+  color: var(--accent);
+}
+.vt-selact[data-on="true"]:hover {
+  background: var(--accent-14);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+.vt-selact--danger:hover:not(:disabled) {
+  background: var(--danger-bg);
+  border-color: var(--danger-line);
+  color: var(--danger);
+}
+.vt-selact--quiet {
+  background: transparent;
+  color: var(--tx2);
+}
+.vt-selact--quiet:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--tx);
+}
+.vt-selact-label {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Attachment and prompt share one line, and it starts on the same left rail as
+   the controls below — the composer reads as one column, not three insets. */
+.vt-composer-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px 2px;
+}
+.vt-prompt {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  min-height: 40px;
+  max-height: 168px;
+  background: transparent;
+  border: none;
+  padding: 9px 8px 8px 4px;
+  font-size: 15px;
+  line-height: 1.5;
+  outline: none;
+}
+.vt-prompt:focus-visible {
+  outline: none;
+}
+.vt-prompt::placeholder {
+  color: var(--tx3);
+}
+
+/* One rail carries the model, whatever the catalog declares, and the batch;
+   the primary action holds the far end. The rail wraps rather than scrolls —
+   a hidden overflow is a control the visitor never finds. */
+.vt-composer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+  padding: 2px 12px 12px;
+}
+.vt-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.vt-attach {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  /* The head aligns to the top so a grown prompt keeps the button on its first
+     line; this nudge centres it optically on that line rather than on the box. */
+  margin-top: 3px;
+  border-radius: var(--ctl-r);
+  border: 1px solid var(--line-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tx2);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s var(--ease);
+}
+.vt-attach:hover:not(:disabled),
+.vt-attach[aria-expanded="true"] {
+  background: var(--s3);
+  color: var(--tx);
+}
+.vt-attach:active:not(:disabled) {
+  transform: scale(0.96);
+}
+.vt-attach:disabled {
+  color: var(--tx-off);
+  border-color: var(--line);
+}
+.vt-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-2);
+  border-top-color: var(--accent);
+  animation: vt-rotate 0.7s linear infinite;
+}
+
+/* Every control on the rail is the same pill. The model keeps its swatch and
+   caret; each setting carries its own mark and its current value. */
+.vt-ctl {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  min-width: 0;
+  padding: 0 12px;
+  border-radius: var(--ctl-r);
+  border: 1px solid var(--line-2);
+  color: var(--tx2);
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s var(--ease);
+}
+.vt-ctl:hover {
+  background: var(--s3);
+  color: var(--tx);
+}
+.vt-ctl:active {
+  transform: scale(0.96);
+}
+.vt-ctl[aria-expanded="true"] {
+  background: var(--s3);
+  border-color: var(--accent-32);
+  color: var(--tx);
+}
+/* A flag is on or off, and on is a state — so it takes the accent the rest of
+   the rail never does. */
+.vt-ctl--flag[aria-pressed="true"] {
+  background: var(--accent-14);
+  border-color: var(--accent-32);
+  color: var(--accent);
+}
+.vt-ctl--model {
+  background: var(--s3);
+  box-shadow: var(--shadow-1);
+  color: var(--tx);
+}
+.vt-ctl--model:hover {
+  background: var(--s4);
+}
+.vt-ctl-glyph {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--tx3);
+  transition: color 0.15s ease;
+}
+.vt-ctl:hover .vt-ctl-glyph,
+.vt-ctl[aria-expanded="true"] .vt-ctl-glyph {
+  color: var(--tx2);
+}
+.vt-ctl--flag[aria-pressed="true"] .vt-ctl-glyph {
+  color: inherit;
+}
+.vt-ctl-value {
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vt-ctl-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The aspect mark is the ratio itself, drawn in a fixed optical box so the
+   pill keeps its width as the value changes. */
+.vt-ctl-ratio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+.vt-ctl-ratio-box {
+  border: 1.3px solid currentColor;
+  border-radius: 2px;
+  opacity: 0.7;
+}
+/* "auto" hands the frame to the model, so the frame is drawn but not fixed. */
+.vt-ctl-ratio-box--auto {
+  width: 13px;
+  height: 9px;
+  border-style: dashed;
+  opacity: 0.6;
+}
+
+.vt-model-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+.vt-model-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  background: currentColor;
+  -webkit-mask: var(--vt-model-icon) center / contain no-repeat;
+  mask: var(--vt-model-icon) center / contain no-repeat;
+}
+.vt-caret {
+  color: var(--tx3);
+  transition: transform 0.2s var(--ease);
+}
+[aria-expanded="true"] > .vt-caret {
+  transform: rotate(180deg);
+}
+
+/* Batch size: the count and its ceiling between two steps, in one pill — the
+   number is the control, the arrows only nudge it. */
+.vt-batch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 38px;
+  flex-shrink: 0;
+  padding: 0 5px;
+  border-radius: var(--ctl-r);
+  border: 1px solid var(--line-2);
+  color: var(--tx2);
+  transition: background 0.15s ease;
+}
+.vt-batch:hover {
+  background: var(--s3);
+}
+.vt-batch-step {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tx3);
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    transform 0.12s var(--ease);
+}
+.vt-batch-step:hover:not(:disabled) {
+  background: var(--s4);
+  color: var(--tx);
+}
+.vt-batch-step:active:not(:disabled) {
+  transform: scale(0.9);
+}
+.vt-batch-step:disabled {
+  color: var(--tx-off);
+}
+.vt-batch-value {
+  min-width: 30px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--tx);
+}
+.vt-batch-max {
+  font-weight: 500;
+  color: var(--tx3);
+}
+
+.vt-generate-slot {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex;
+}
+.vt-generate {
+  height: 38px;
+  border-radius: var(--ctl-r);
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 620;
+  letter-spacing: -0.005em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  background: linear-gradient(180deg, #d9fe3e, var(--accent));
+  color: var(--accent-ink);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition:
+    filter 0.15s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s var(--ease);
+}
+.vt-generate:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+.vt-generate:active:not(:disabled) {
+  transform: scale(0.96);
+}
+.vt-generate:disabled {
+  background: var(--s3);
+  color: var(--tx4);
+  box-shadow: var(--shadow-1);
+}
+/* Busy is not dead: a run in flight keeps the accent, so it never reads as the
+   grey of "you cannot press this". */
+.vt-generate[data-busy="true"]:disabled {
+  background: var(--accent-14);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent-32);
+}
+.vt-generate-glyph {
+  display: none;
+  align-items: center;
+}
+.vt-generate-label {
+  position: relative;
+}
+/* The shortcut glyphs fall back outside Inter, so they need the extra size and
+   their own tone rather than a blanket opacity. */
+.vt-kbd {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  /* One key, recoloured by the button's own state — on lime it reads as dark
+     ink, on the disabled grey it follows the label. */
+  color: inherit;
+  opacity: 0.68;
+  background: rgba(0, 0, 0, 0.16);
+}
+.vt-generate-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* The same closed sweep as the pending tile, on half its period. The button is
+   about a third of a tile wide, so an equal period would leave the lamp
+   crawling over a short run; 1.4s against 2.8s puts the studio's two waiting
+   surfaces on one 2:1 beat without either reading as anxious. */
+.vt-generate-sheen::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  background-image: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.02) 30%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.02) 70%,
+    transparent 100%
+  );
+  background-size: 50% 100%;
+  background-repeat: repeat-x;
+  animation: vt-sheen 1.4s linear infinite;
+}
+
+/* ---------- tooltips ---------- */
+
+/* The studio's own tooltip: the OS one arrives late, unstyled and in the wrong
+   typeface. This is one hairline plate that rises a few pixels into place, and
+   only after a pause long enough that crossing the rail stays silent. Hosts
+   that are or contain a disabled control carry it on a wrapper, so the label
+   still appears when the control itself cannot be hovered. */
+.vt-tip {
+  position: relative;
+}
+.vt-tip[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  translate: -50% 4px;
+  z-index: 40;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: var(--s4);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--shadow-2);
+  color: var(--tx);
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.003em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 0.13s var(--ease),
+    translate 0.13s var(--ease);
+}
+/* The ends of the rail anchor to their own edge, so a wide label on a narrow
+   control does not hang past the composer. */
+.vt-tip--start[data-tip]::after {
+  left: 0;
+  translate: 0 4px;
+}
+.vt-tip--end[data-tip]::after {
+  left: auto;
+  right: 0;
+  translate: 0 4px;
+}
+.vt-tip[data-tip]:hover::after,
+.vt-tip[data-tip]:focus-visible::after,
+.vt-tip[data-tip]:has(:focus-visible)::after {
+  opacity: 1;
+  translate: -50% 0;
+  transition-delay: 0.35s;
+}
+.vt-tip--start[data-tip]:hover::after,
+.vt-tip--start[data-tip]:focus-visible::after,
+.vt-tip--start[data-tip]:has(:focus-visible)::after,
+.vt-tip--end[data-tip]:hover::after,
+.vt-tip--end[data-tip]:focus-visible::after,
+.vt-tip--end[data-tip]:has(:focus-visible)::after {
+  translate: 0 0;
+}
+/* An open panel already says what the control is; the tooltip would sit on it. */
+.vt-tip[aria-expanded="true"][data-tip]::after {
+  content: none;
+}
+/* The pointer wins. A control that merely kept focus — the one a closed
+   popover handed it back to — must not keep speaking over the control the
+   cursor is actually on. */
+.vt-composer:hover .vt-tip[data-tip]:not(:hover)::after {
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+/* ---------- popovers ---------- */
+
+/* --vt-pop-x and --vt-pop-y travel to the control that opened the panel, both
+   already clamped to the composer's own column, so a panel opens against its
+   trigger instead of floating above the whole dock. */
+.vt-popover {
+  position: absolute;
+  bottom: var(--vt-pop-y, calc(100% + 10px));
+  left: var(--vt-pop-x, 0px);
+  z-index: 30;
+  background: var(--s2);
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  box-shadow: var(--shadow-3), var(--glint);
+  animation: vt-pop 0.22s var(--ease);
+  transform-origin: bottom left;
+}
+/* One setting at a time, so the panel is the width of its own values. */
+.vt-popover--setting {
+  width: min(268px, 100%);
+  max-height: min(50vh, 420px);
+  overflow-y: auto;
+  padding: 14px;
+}
+/* An enum's values run down a column, so the panel is a narrow one: the header
+   holds still at the top and the values scroll under it, rather than the whole
+   panel sliding its own title out of view. */
+.vt-popover--list {
+  width: min(216px, 100%);
+  /* Room for the longest allow-list a model declares — eleven ratios stand
+     whole on a laptop rather than losing their last line to the cap. */
+  max-height: min(56vh, 452px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 12px 9px 9px;
+}
+.vt-popover--list .vt-field {
+  min-height: 0;
+}
+/* The header sits on the same rail the values' own box starts from. */
+.vt-popover--list .vt-field-label {
+  padding-left: 9px;
+}
+/* The panel's height is settled by the catalog and the viewport before a key is
+   pressed, never by the query: a field that walks up the screen while it is
+   being typed into is a field that cannot be typed into. The rows the surface
+   declares set it — 54px on a 2px gap — plus the search header, the list's own
+   padding and the group label, so a short catalog still gets a snug panel and
+   a long one stops at the cap and scrolls. Filtering moves what is inside the
+   frame; the frame holds still. */
+.vt-popover--picker {
+  width: min(560px, 100%);
+  height: min(60vh, 520px, calc(95px + var(--vt-picker-rows, 99) * 56px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.vt-popover--menu {
+  width: min(240px, 100%);
+  padding: 12px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.vt-popover--menu .vt-pop-head {
+  padding-left: 8px;
+}
+.vt-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.vt-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 8px;
+  text-align: left;
+  color: var(--tx2);
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+.vt-menu-row:hover:not(:disabled) {
+  background: var(--s3);
+  color: var(--tx);
+}
+.vt-menu-row:disabled {
+  color: var(--tx-off);
+}
+.vt-menu-ic {
+  display: flex;
+  color: var(--tx3);
+  transition: color 0.12s ease;
+}
+.vt-menu-row:hover:not(:disabled) .vt-menu-ic {
+  color: var(--accent);
+}
+.vt-menu-row:disabled .vt-menu-ic {
+  color: var(--tx-off);
+}
+.vt-menu-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vt-menu-count {
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--tx4);
+}
+.vt-menu-row:disabled .vt-menu-count {
+  color: var(--tx-off);
+}
+
+.vt-pop-head {
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tx3);
+}
+.vt-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vt-field-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.vt-field-label {
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--tx2);
+}
+.vt-field-value {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--tx);
+}
+/* One value per line. A wrapping row left every value at its own width on a
+   ragged edge — eleven ratios read as a block to be decoded rather than a list
+   to be scanned. */
+.vt-opts {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.vt-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  /* The list scrolls; the lines never squash to make room. */
+  flex-shrink: 0;
+  padding: 0 9px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+  color: var(--tx2);
+  transition:
+    background 0.13s ease,
+    color 0.13s ease;
+}
+.vt-opt:hover {
+  background: var(--s3);
+  color: var(--tx);
+}
+/* The list scrolls a focused line to its own edge, where an outset ring would
+   be clipped by the scroller — so the ring is drawn inside the line. */
+.vt-opt:focus-visible {
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+.vt-opt[aria-pressed="true"] {
+  background: var(--accent-08);
+  color: var(--accent);
+}
+.vt-opt[aria-pressed="true"]:hover {
+  background: var(--accent-14);
+}
+.vt-opt-label {
+  flex: 1;
+  min-width: 0;
+}
+.vt-opt-check {
+  display: flex;
+  flex-shrink: 0;
+}
+/* A fixed optical box, so 21:9 and 1:1 leave their labels on the same rail. */
+.vt-opt-ratio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.vt-opt-box {
+  border: 1.3px solid currentColor;
+  border-radius: 2px;
+  opacity: 0.55;
+}
+/* "auto" hands the frame to the model, so the frame is drawn but not fixed —
+   the same mark the pill carries when the model is left to choose. */
+.vt-opt-box--auto {
+  width: 13px;
+  height: 9px;
+  border-style: dashed;
+}
+.vt-opt:hover .vt-opt-box,
+.vt-opt[aria-pressed="true"] .vt-opt-box {
+  opacity: 1;
+}
+
+.vt-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--s1);
+  border: 1px solid var(--line);
+  color: var(--tx2);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s var(--ease);
+}
+.vt-chip:hover {
+  background: var(--s3);
+  color: var(--tx);
+}
+.vt-chip:active {
+  transform: scale(0.96);
+}
+.vt-chip[aria-pressed="true"] {
+  background: var(--accent-14);
+  border-color: var(--accent-32);
+  color: var(--accent);
+}
+.vt-slider {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 20px;
+  background: transparent;
+  cursor: pointer;
+}
+.vt-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 4px;
+  background:
+    linear-gradient(var(--accent), var(--accent)) 0 / var(--fill, 50%) 100% no-repeat,
+    var(--s3);
+}
+.vt-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #f2f6f5;
+  margin-top: -5px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s var(--ease);
+}
+.vt-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+.vt-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 4px;
+  background: var(--s3);
+}
+.vt-slider::-moz-range-progress {
+  height: 4px;
+  border-radius: 4px;
+  background: var(--accent);
+}
+.vt-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 50%;
+  background: #f2f6f5;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.vt-input {
+  width: 100%;
+  min-width: 0;
+  background: var(--s1);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 11px;
+  font-size: 12.5px;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.vt-input:hover {
+  border-color: var(--line-2);
+}
+.vt-input:focus {
+  border-color: var(--accent-32);
+  box-shadow: 0 0 0 3px var(--accent-08);
+}
+/* The field paints its own ring; the global one would stack a second. */
+.vt-input:focus-visible {
+  outline: none;
+}
+
+.vt-icon-btn {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--s1);
+  border: 1px solid var(--line);
+  color: var(--tx2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s var(--ease);
+}
+.vt-icon-btn:hover {
+  background: var(--s3);
+  color: var(--tx);
+  border-color: var(--line-2);
+}
+.vt-icon-btn:active {
+  transform: scale(0.96);
+}
+.vt-picker-close {
+  position: relative;
+  width: 30px;
+  height: 30px;
+}
+.vt-picker-close::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+}
+.vt-icon-btn[data-spin="true"] svg {
+  animation: vt-spin-once 0.35s var(--ease);
+}
+
+/* picker */
+
+/* Search leads the panel; the catalog is long enough that typing beats
+   scanning, so the field is the header rather than a control inside it. */
+.vt-picker-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px 11px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.vt-picker-search-ic {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--tx3);
+}
+.vt-picker-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--tx);
+}
+.vt-picker-input::placeholder {
+  color: var(--tx3);
+}
+.vt-picker-input:focus-visible {
+  outline: none;
+}
+.vt-picker-close {
+  flex-shrink: 0;
+}
+.vt-picker-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.vt-picker-group {
+  padding: 9px 10px 5px;
+}
+.vt-model-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  text-align: left;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+.vt-model-row:hover {
+  background: var(--s3);
+}
+/* The current model keeps its plate whether or not the pointer is on it. */
+.vt-model-row[aria-current] {
+  background: var(--s3);
+  border-color: var(--line-2);
+}
+.vt-model-row-swatch {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    var(--shadow-1);
+  position: relative;
+  overflow: hidden;
+}
+.vt-model-row-swatch--icon {
+  display: grid;
+  place-items: center;
+  background: var(--s2);
+  color: var(--tx);
+}
+.vt-model-row-text {
+  flex: 1;
+  min-width: 0;
+}
+.vt-model-row-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* What the model makes, takes and tops out at — derived from its own entry. */
+.vt-model-row-desc {
+  display: block;
+  font-size: 11.5px;
+  color: var(--tx3);
+  padding-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vt-model-row-check {
+  width: 16px;
+  flex-shrink: 0;
+  color: var(--accent);
+  display: flex;
+  justify-content: center;
+}
+/* Nothing matched, so the panel keeps its height with nothing to put in it:
+   the notice takes the middle of the empty frame rather than clinging to the
+   count line with a blank plate underneath. */
+.vt-picker-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: auto 0;
+  padding: 30px 20px 26px;
+  text-align: center;
+}
+.vt-picker-empty-ic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--s2);
+  border: 1px solid var(--line);
+  box-shadow: var(--glint);
+  color: var(--tx3);
+}
+.vt-picker-empty-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--tx);
+}
+.vt-picker-empty-hint {
+  max-width: 40ch;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--tx3);
+  text-wrap: pretty;
+}
+.vt-picker-empty .vt-btn-solid {
+  margin-top: 3px;
+  height: 30px;
+}
+
+/* ---------- asset picker ---------- */
+
+/* Inputs come from two shelves — files this browser sent to Blob, and the runs
+   already finished — so the panel is a contact sheet with a tab per shelf,
+   opened over the + it belongs to rather than as a modal over the work. */
+.vt-popover--assets {
+  width: min(560px, 100%);
+  max-height: min(64vh, 540px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.vt-assets-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px 9px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.vt-assets-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.vt-assets-tabs::-webkit-scrollbar {
+  display: none;
+}
+.vt-assets-tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 8px;
+  white-space: nowrap;
+  font-size: 12.5px;
+  font-weight: 550;
+  letter-spacing: -0.005em;
+  color: var(--tx2);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.vt-assets-tab:hover {
+  color: var(--tx);
+}
+.vt-assets-tab:not([aria-selected="true"]):hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+.vt-assets-tab[aria-selected="true"] {
+  color: var(--tx);
+  background: var(--s3);
+  box-shadow:
+    inset 0 0 0 1px var(--line-2),
+    var(--glint);
+}
+/* The shelf's size is measurement, not emphasis: tabular, quiet, and never
+   accent — the accent in this panel belongs to what is selected. */
+.vt-assets-tab-count {
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--tx4);
+}
+.vt-assets-tab[aria-selected="true"] .vt-assets-tab-count {
+  color: var(--tx2);
+}
+
+/* Which slot the picked asset fills — present only where the model declares
+   more than one, so most models never see this row. */
+.vt-assets-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.vt-chip--role {
+  height: 28px;
+  padding: 0 11px;
+  gap: 7px;
+  font-size: 11.5px;
+}
+.vt-chip-count {
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--tx4);
+}
+.vt-chip--role[aria-pressed="true"] .vt-chip-count {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.vt-assets-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.vt-assets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 10px;
+  padding: 14px;
+}
+
+.vt-asset {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 11px;
+  overflow: hidden;
+  background: var(--s1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition:
+    box-shadow 0.16s ease,
+    opacity 0.16s ease,
+    transform 0.16s var(--ease);
+}
+.vt-asset:hover:not(:disabled) {
+  box-shadow:
+    inset 0 0 0 1px var(--line-2),
+    var(--shadow-1);
+}
+.vt-asset:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.vt-asset[data-picked="true"] {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+/* Only the cap disables a tile — an input already on the plane stays pressable,
+   because pressing it off is how it comes back off. */
+.vt-asset:disabled {
+  opacity: 0.35;
+}
+.vt-asset-art {
+  position: absolute;
+  inset: 0;
+  background: var(--s2);
+}
+.vt-asset-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition:
+    transform 0.35s var(--ease),
+    opacity 0.16s ease;
+}
+.vt-asset:hover:not(:disabled) .vt-asset-media {
+  transform: scale(1.045);
+}
+.vt-asset-glyph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tx3);
+  transition: opacity 0.16s ease;
+}
+.vt-asset-kind {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  background: var(--plate);
+  color: var(--plate-ink);
+}
+/* One mark for one state: the tile is in the set this panel will apply, whether
+   it arrived with the panel or was just pressed. */
+.vt-asset-mark {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: var(--shadow-1);
+  opacity: 0;
+  transform: scale(0.7);
+  transition:
+    opacity 0.16s ease,
+    transform 0.2s var(--ease);
+}
+.vt-asset[data-picked="true"] .vt-asset-mark {
+  opacity: 1;
+  transform: none;
+}
+
+/* The one dashed edge on the surface: a slot waiting to be filled, not a
+   drawn control. */
+.vt-asset--upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: none;
+  border: 1px dashed var(--line-2);
+  box-shadow: none;
+  color: var(--tx2);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.16s var(--ease);
+}
+.vt-asset--upload:hover:not(:disabled) {
+  background: var(--accent-08);
+  border-color: var(--accent-32);
+  box-shadow: none;
+  color: var(--tx);
+}
+.vt-asset--upload:disabled {
+  border-color: var(--line);
+  color: var(--tx-off);
+  opacity: 1;
+}
+.vt-asset-upload-label {
+  font-size: 11.5px;
+  font-weight: 550;
+}
+
+.vt-assets-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px 11px 15px;
+  border-top: 1px solid var(--line);
+}
+.vt-assets-tally {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--tx3);
+}
+.vt-btn-accent {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: var(--shadow-1);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s var(--ease);
+}
+.vt-btn-accent:hover:not(:disabled) {
+  background: var(--accent-strong);
+}
+.vt-btn-accent:active:not(:disabled) {
+  transform: scale(0.97);
+}
+/* Nothing staged: the press only closes the panel, so the button steps back to
+   the quiet plate every other dismissal on this surface uses. */
+.vt-btn-accent[data-quiet="true"] {
+  background: var(--s3);
+  color: var(--tx2);
+  box-shadow: var(--shadow-1);
+}
+.vt-btn-accent[data-quiet="true"]:hover {
+  background: var(--s4);
+  color: var(--tx);
+}
+
+/* ---------- dialogs ---------- */
+
+.vt dialog {
+  border: none;
+  padding: 0;
+  /* The reset above zeroes every margin, which breaks the UA centering of
+     modal dialogs — restore it. */
+  margin: auto;
+  background: transparent;
+  color: inherit;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+}
+.vt dialog::backdrop {
+  background: rgba(4, 5, 5, 0.66);
+  backdrop-filter: blur(10px);
+  animation: vt-fade 0.2s ease;
+}
+.vt dialog[open] .vt-dialog-panel {
+  animation: vt-pop 0.28s var(--ease);
+}
+/* Held mounted and open by the dialog's own component for the length of this;
+   `forwards` keeps the end state so nothing flashes back before it unmounts. */
+.vt dialog[data-closing] .vt-dialog-panel {
+  animation: vt-pop-out 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
+  /* A panel on its way out takes no more clicks. */
+  pointer-events: none;
+}
+.vt dialog[data-closing]::backdrop {
+  animation: vt-fade-out 0.18s ease forwards;
+}
+.vt-dialog-panel:focus {
+  outline: none;
+}
+.vt-dialog-panel {
+  background: var(--s2);
+  border: 1px solid var(--line-2);
+  border-radius: 18px;
+  box-shadow: var(--shadow-3), var(--glint);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.vt-keys-panel {
+  width: 420px;
+  max-width: calc(100vw - 32px);
+}
+.vt-keys-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 18px 0;
+}
+.vt-keys-title {
+  font-size: 16px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+}
+.vt-keys-copy {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--tx3);
+}
+.vt-keys-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px 18px;
+}
+.vt-keys-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+.vt-keys-save {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.vt-keys-save:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+.vt-keys-save:disabled {
+  opacity: 0.45;
+}
+
+/* ---------- viewer ---------- */
+
+/* The run opens at the size it was made at: the picture holds the full height
+   of the viewport, and everything the studio knows about it stands in a panel
+   alongside rather than cropping the work into a card. */
+.vt dialog.vt-viewer {
+  width: 100vw;
+  height: 100dvh;
+  margin: 0;
+}
+.vt dialog.vt-viewer::backdrop {
+  background: rgba(4, 5, 5, 0.86);
+}
+.vt-viewer-panel {
+  width: 100%;
+  height: 100%;
+  flex-direction: row;
+  align-items: stretch;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+/* A viewport-sized panel has no edge to scale from, so it arrives by fade and
+   lets the picture and the sidebar carry the travel. */
+.vt dialog[open] .vt-viewer-panel {
+  animation: vt-fade 0.22s ease;
+}
+.vt dialog[data-closing] .vt-viewer-panel {
+  animation: vt-fade-out 0.18s ease forwards;
+  pointer-events: none;
+}
+
+.vt-viewer-stage {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  /* Makes 100cqh below resolve to this stage's own inner height, so the figure
+     sizes off the space it actually has at every breakpoint. */
+  container-type: size;
+}
+.vt-viewer-figure {
+  margin: 0;
+  position: relative;
+  /* Height first: the ratio states the width the picture needs to stand full
+     height, and 100% takes it back when that is wider than the stage. Sizing
+     the box rather than letting max-height clamp it keeps the ratio exact —
+     a clamped aspect-ratio box distorts instead of shrinking. */
+  width: min(100%, calc(100cqh * var(--a, 1.5)));
+  max-height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--s1);
+  box-shadow:
+    var(--shadow-3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  isolation: isolate;
+  animation: vt-pop 0.34s var(--ease-slide) both;
+}
+.vt-viewer-art {
+  position: absolute;
+  inset: 0;
+}
+/* Once the media has reported its shape the box is cut to it exactly, so the
+   ground behind has nothing left to fill — and a subpixel row of seeded
+   artwork along one edge is the only thing it could still paint. */
+.vt-viewer-figure[data-shaped] .vt-viewer-art {
+  display: none;
+}
+.vt-viewer-media {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: vt-fade 0.3s ease;
+}
+
+.vt-viewer-side {
+  width: 340px;
+  flex-shrink: 0;
+  margin: 12px 12px 12px 0;
+  border-radius: 16px;
+  background: var(--s2);
+  border: 1px solid var(--line-2);
+  box-shadow:
+    var(--shadow-3),
+    var(--glint);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  animation: vt-side-in 0.36s var(--ease-slide) both;
+}
+@keyframes vt-side-in {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.vt-viewer-side-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 13px 13px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.vt-viewer-title {
+  min-width: 0;
+}
+.vt-viewer-model {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 620;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vt-viewer-when {
+  margin-top: 3px;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--tx4);
+}
+.vt-viewer-close {
+  width: 30px;
+  height: 30px;
+}
+
+.vt-viewer-side-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 17px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 21px;
+}
+.vt-viewer-block {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.vt-viewer-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  /* Reserves the copy button's rail so the Prompt and Details labels sit on
+     the same baseline whether or not a section carries an action. */
+  min-height: 22px;
+  margin-top: -3px;
+}
+.vt-viewer-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--tx4);
+}
+.vt-viewer-copy {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--tx3);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.vt-viewer-copy:hover {
+  background: var(--s3);
+  color: var(--tx);
+}
+.vt-viewer-copy[data-done] {
+  color: var(--accent);
+}
+/* The words the run was made from: the one thing in the panel worth taking
+   away by hand, so it is set as text on a plate, not as a caption. */
+.vt-viewer-prompt {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--tx);
+  background: var(--s1);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.vt-viewer-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vt-viewer-fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+.vt-viewer-fact dt {
+  font-size: 12px;
+  color: var(--tx3);
+  white-space: nowrap;
+}
+.vt-viewer-fact dd {
+  font-size: 12px;
+  color: var(--tx);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.vt-viewer-side-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 13px 14px 14px;
+  border-top: 1px solid var(--line);
+}
+/* Both shared button classes are declared further down this file, so the two
+   overrides below are qualified rather than left to lose on source order. */
+.vt-cta.vt-viewer-recreate {
+  flex: none;
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.vt-viewer-foot-row {
+  display: flex;
+  gap: 8px;
+}
+.vt-btn-solid.vt-viewer-download {
+  flex: 1;
+  height: 36px;
+  justify-content: center;
+}
+/* A refused read is the one state here that is not neutral: the control keeps
+   its place and its shape and changes only what it says and how it reads. */
+.vt-btn-solid.vt-viewer-download[data-state="failed"] {
+  background: var(--danger-bg);
+  border-color: var(--danger-line);
+  color: var(--danger);
+}
+.vt-btn-solid.vt-viewer-download[data-state="failed"]:hover {
+  background: rgba(255, 141, 120, 0.16);
+  border-color: var(--danger);
+}
+.vt-viewer-save-note {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--danger);
+  animation: vt-rise 0.22s var(--ease);
+}
+.vt-viewer-trash,
+.vt-viewer-keep {
+  width: 36px;
+  height: 36px;
+}
+/* Neutral until reached for, then the studio's danger tint — the same bargain
+   the card's delete makes, so no control anywhere sits permanently red. */
+.vt-icon-btn.vt-viewer-trash:hover {
+  background: var(--danger-bg);
+  border-color: var(--danger-line);
+  color: var(--danger);
+}
+.vt-viewer-keep[data-on="true"] {
+  background: var(--accent-08);
+  border-color: var(--accent-32);
+  color: var(--accent);
+}
+.vt-viewer-keep[data-on="true"]:hover {
+  background: var(--accent-14);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+.vt-btn-quiet {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--tx2);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.vt-btn-quiet:hover {
+  background: var(--s3);
+  color: var(--tx);
+}
+.vt-btn-quiet:active {
+  transform: scale(0.97);
+}
+.vt-btn-solid {
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--s3);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.vt-btn-solid:hover {
+  background: var(--s4);
+  border-color: var(--line-2);
+}
+.vt-btn-solid:active {
+  transform: scale(0.97);
+}
+a.vt-btn-solid {
+  color: var(--tx);
+  text-decoration: none;
+}
+.vt-btn-quiet {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.vt-play-btn {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(7, 11, 10, 0.5);
+  backdrop-filter: blur(8px);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f4f8f7;
+  transition:
+    transform 0.25s var(--ease),
+    background 0.2s ease;
+}
+.vt-play-btn:hover {
+  transform: scale(1.06);
+  background: rgba(9, 15, 13, 0.62);
+}
+.vt-play-btn:active {
+  transform: scale(0.98);
+}
+.vt-wave {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 64px;
+}
+.vt-wave span {
+  width: 3px;
+  border-radius: 3px;
+  background: rgba(244, 248, 247, 0.66);
+}
+
+/* api modal */
+.vt-api-panel {
+  width: 440px;
+  max-width: calc(100vw - 48px);
+  padding: 24px 24px 20px;
+  gap: 18px;
+}
+.vt-api-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.vt-api-title {
+  font-size: 17px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.vt-api-sub {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--tx3);
+  padding-top: 5px;
+}
+.vt-api-hint {
+  font-size: 11.5px;
+  color: var(--tx3);
+}
+.vt-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.vt-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--s1);
+  border: 1px solid var(--line);
+  font-size: 11.5px;
+  color: var(--tx2);
+}
+.vt-pill-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tx4);
+  transition: background 0.2s ease;
+}
+.vt-pill[data-on="true"] .vt-pill-dot {
+  background: var(--accent);
+}
+.vt-api-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 2px;
+}
+.vt-cta {
+  flex: 1;
+  height: 40px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 620;
+  background: linear-gradient(180deg, #d9fe3e, var(--accent));
+  color: var(--accent-ink);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition:
+    filter 0.15s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s var(--ease);
+}
+.vt-cta:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+.vt-cta:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.vt-cta:disabled {
+  background: var(--s3);
+  color: var(--tx3);
+  box-shadow: var(--shadow-1);
+}
+
+/* ---------- entrance ---------- */
+
+.vt-enter-1 {
+  animation: vt-drop 0.4s var(--ease-slide) both;
+}
+/* `backwards`, not `both`: the fill is only wanted for the delay before the
+   rise starts, and vt-rise already ends on the element's own resting values.
+   A forwards fill would leave `transform` computing to an identity matrix
+   forever, which makes the composer a backdrop root and flattens the blur of
+   the selection toolbar docked inside it. */
+.vt-enter-2 {
+  animation: vt-rise 0.35s var(--ease) 0.06s backwards;
+}
+
+/* ---------- responsive ---------- */
+
+/* No hover to reveal them with, so the card's actions simply stand. */
+@media (hover: none) {
+  .vt-tile-act {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    /* Thumb targets, not cursor targets — the rail is permanent here. */
+    width: 36px;
+    height: 36px;
+  }
+  .vt-pick {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+    pointer-events: auto;
+    width: 36px;
+    height: 36px;
+  }
+  .vt-pick-box {
+    width: 23px;
+    height: 23px;
+  }
+  /* Nothing here reveals it, so the run signs itself permanently. */
+  .vt-tile-caption {
+    opacity: 1;
+    transform: none;
+  }
+  /* The corner is already shared, permanently. */
+  .vt-tile-badge {
+    translate: 32px 0;
+  }
+}
+
+/* Under this the sidebar can no longer stand beside a picture without
+   starving it, so the two stack: the work keeps the upper field and the panel
+   takes the rest, scrolling its own body. */
+@media (max-width: 900px) {
+  .vt-viewer-panel {
+    flex-direction: column;
+  }
+  .vt-viewer-stage {
+    padding: 16px 16px 0;
+  }
+  /* The panel asks for the height its own content needs and no more, up to
+     three fifths of the screen; the picture takes everything left over. */
+  .vt-viewer-side {
+    flex: none;
+    width: auto;
+    max-height: 60dvh;
+    margin: 12px;
+    /* Sliding in from the right is a gesture about a column that is no longer
+       there. Stacked, the panel rises into place. */
+    animation-name: vt-rise;
+  }
+  .vt-viewer-side-body {
+    padding-bottom: 16px;
+  }
+}
+
+/* The lamp keeps its light but drops its label before the pair can crowd. */
+@media (max-width: 760px) {
+  .vt-key-text {
+    display: none;
+  }
+  .vt-key {
+    gap: 7px;
+    padding: 0 11px;
+  }
+}
+@media (max-width: 640px) {
+  /* Narrow enough that a panel spans the column — the anchor stops mattering. */
+  .vt-popover {
+    left: 0;
+    right: 0;
+  }
+  /* Picked by thumb rather than pointer: the lines take the height back. */
+  .vt-opt {
+    height: 40px;
+  }
+  .vt-dock {
+    padding-bottom: 14px;
+  }
+  /* A truncated prompt is no longer a prompt — the narrow column gets a third
+     line rather than an ellipsis. */
+  .vt-starter-text {
+    -webkit-line-clamp: 3;
+  }
+  /* The panel now owns the column, so the contact sheet gives its padding back
+     to the tiles and keeps two of them per row. */
+  .vt-popover--assets {
+    max-height: min(58vh, 460px);
+  }
+  .vt-assets-grid {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+    padding: 12px;
+  }
+  .vt-assets-roles {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  .vt-topbar {
+    padding: 10px 14px 0;
+  }
+  .vt-gallery {
+    --vt-fade: 56px;
+    padding: 64px 14px 8px;
+  }
+  .vt-dock {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .vt-bar {
+    height: 42px;
+    border-radius: 14px;
+  }
+  /* Where only one of the two can fit, the labels stay: three drawn frames
+     read alike at a glance, three words do not. */
+  .vt-tab svg {
+    display: none;
+  }
+  .vt-tab,
+  .vt-key {
+    height: 32px;
+    padding: 0 11px;
+  }
+  /* Favorites is the exception: it is the longest word and the only mark with
+     no sibling to be confused with, so here it trades the word for the heart. */
+  .vt-tab[data-view="favorites"] svg {
+    display: block;
+  }
+  .vt-tab[data-view="favorites"] .vt-tab-label {
+    display: none;
+  }
+  .vt-tab[data-view="favorites"] {
+    padding: 0 10px;
+  }
+  /* Phone composer: the rail keeps every control and wraps, and the primary
+     action takes the full width of its own line rather than shrinking to a
+     44px mark the thumb has to aim at. */
+  .vt-strip {
+    padding: 12px 10px 0;
+  }
+  .vt-composer-head {
+    padding: 10px 10px 2px;
+  }
+  .vt-composer-row {
+    padding: 2px 10px 10px;
+  }
+  .vt-composer {
+    border-radius: 20px;
+  }
+  /* Thumb targets, not cursor targets. */
+  .vt-ctl,
+  .vt-batch {
+    height: 42px;
+  }
+  .vt-attach {
+    width: 38px;
+    height: 38px;
+  }
+  .vt-batch-step {
+    width: 28px;
+    height: 28px;
+  }
+  .vt-generate-slot {
+    width: 100%;
+    margin-left: 0;
+  }
+  .vt-generate {
+    width: 100%;
+    height: 44px;
+  }
+  .vt-generate-glyph {
+    display: flex;
+  }
+  /* No modifier key to press it with. */
+  .vt-kbd {
+    display: none;
+  }
+  /* The toolbar spans the column here rather than hugging its contents: at
+     this width a centred pill and a full-bleed one are the same thing, and the
+     spread gives every action a thumb target. */
+  .vt-selbar {
+    width: 100%;
+    gap: 4px;
+    padding: 7px;
+    border-radius: 18px;
+  }
+  .vt-selbar-count {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .vt-selact {
+    height: 40px;
+    min-width: 40px;
+  }
+}
+
+/* Below this the count keeps its number and gives up its sheets, and below
+   that the primary action keeps its mark and gives up its word — every action
+   still standing at its own thumb target. */
+@media (max-width: 400px) {
+  .vt-selstack {
+    display: none;
+  }
+  .vt-selbar-rule {
+    margin: 0;
+  }
+}
+@media (max-width: 360px) {
+  .vt-selact--wide {
+    padding: 0;
+  }
+  .vt-selact-label {
+    display: none;
+  }
+}
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .vt *,
+  .vt *::before,
+  .vt *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .vt-lamp {
+    animation: none;
+    opacity: 1;
+  }
+  /* A timer bar forced to 0.01ms reads as "already expired". Better absent. */
+  .vt-undo-drain {
+    display: none;
+  }
+  /* A sweep frozen one frame in reads as a rendering fault rather than as a
+     wait. The band goes; the plate keeps its grain, and the clock, which is not
+     motion, goes on reporting that the run is alive. */
+  .vt-skeleton::before,
+  .vt-generate-sheen {
+    display: none;
+  }
+}
+
+/* ---------- Vitrina additions: job rail, filters, credits, review ---------- */
+
+.vt-jobrail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 0 0 8px;
+}
+.vt-jobpill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 28px;
+  padding: 0 10px 0 8px;
+  border-radius: 8px;
+  background: var(--s2);
+  border: 1px solid var(--line);
+  color: var(--tx);
+  font-size: 12.5px;
+  text-decoration: none;
+  max-width: 260px;
+  transition: background 120ms var(--ease), border-color 120ms var(--ease);
+}
+.vt-jobpill:hover,
+.vt-jobpill[aria-expanded="true"] {
+  background: var(--s3);
+  border-color: var(--line-2);
+}
+.vt-jobpill[data-empty="true"] .vt-jobpill-value {
+  color: var(--tx3);
+}
+.vt-jobpill-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+.vt-jobpill-label {
+  color: var(--tx4);
+  font-size: 11.5px;
+}
+.vt-jobpill-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vt-jobrail-hint {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--tx4);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.vt-popover--job .vt-picker-list {
+  max-height: 360px;
+}
+.vt-picker-title {
+  flex: 1;
+  padding-left: 4px;
+}
+.vt-model-row[data-dim] {
+  opacity: 0.55;
+}
+.vt-model-row-swatch--blank {
+  background: var(--s3);
+}
+.vt-jobrow-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.vt-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px 0 8px;
+}
+.vt-preview-toggle {
+  align-self: flex-start;
+  font-size: 11.5px;
+  color: var(--tx4);
+}
+.vt-preview-toggle:hover {
+  color: var(--tx2);
+}
+.vt-preview-text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--tx2);
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--s1);
+  border: 1px solid var(--line);
+  max-height: 120px;
+  overflow: auto;
+}
+
+.vt-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 0 14px;
+}
+.vt-filter-select select {
+  height: 30px;
+  padding: 0 28px 0 10px;
+  border-radius: 8px;
+  background: var(--s2);
+  border: 1px solid var(--line);
+  color: var(--tx);
+  font: inherit;
+  font-size: 12.5px;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--tx3) 50%), linear-gradient(135deg, var(--tx3) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+.vt-seg {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--s1);
+  border: 1px solid var(--line);
+}
+.vt-seg-btn {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--tx3);
+}
+.vt-seg-btn[aria-pressed="true"] {
+  background: var(--s3);
+  color: var(--tx);
+  box-shadow: var(--glint);
+}
+
+.vt-credits {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--s1);
+  border: 1px solid var(--line);
+  color: var(--tx);
+  font-size: 12.5px;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+  margin-right: 8px;
+}
+.vt-credits svg {
+  color: var(--accent);
+}
+.vt-credits-label {
+  color: var(--tx4);
+}
+.vt-credits[data-low] {
+  border-color: var(--danger-line);
+}
+.vt-credits[data-low] .vt-credits-n {
+  color: var(--danger);
+}
+
+.vt-tile-review {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--plate);
+  color: var(--plate-ink);
+  z-index: 2;
+}
+.vt-tile-review[data-review="approved"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.vt-tile-review[data-review="rejected"] {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-line);
+}
+
+.vt-viewer-review {
+  flex-direction: row;
+  gap: 8px;
+}
+.vt-review-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line-2);
+  color: var(--tx2);
+  font-size: 12.5px;
+  transition: background 120ms var(--ease), color 120ms var(--ease), border-color 120ms var(--ease);
+}
+.vt-review-btn:hover {
+  color: var(--tx);
+  background: var(--s2);
+}
+.vt-review-btn[data-kind="approve"][data-on="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.vt-review-btn[data-kind="reject"][data-on="true"] {
+  background: var(--danger-bg);
+  border-color: var(--danger-line);
+  color: var(--danger);
+}
+.vt-review-btn--mini {
+  height: 22px;
+  width: 22px;
+  padding: 0;
+  justify-content: center;
+  border-color: transparent;
+  color: var(--plate-ink);
+}
+.vt-selact--ok[data-on="true"] {
+  color: var(--accent);
+}
+
+.vt-gallery-foot {
+  display: flex;
+  justify-content: center;
+  padding: 18px 0 6px;
+}
