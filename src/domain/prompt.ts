@@ -22,7 +22,7 @@ function endsWithPunctuation(text: string): boolean {
   return /[.!?…]$/.test(text);
 }
 
-function sentence(text: string): string {
+function sentence(text: string | undefined | null): string {
   const value = clean(text);
   if (!value) return "";
   return endsWithPunctuation(value) ? value : `${value}.`;

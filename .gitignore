@@ -12,3 +12,6 @@ tsconfig.tsbuildinfo
 
 .env*
 .idea
+
+# local database and uploads
+data/
