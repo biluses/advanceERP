@@ -14,6 +14,7 @@ Zustand · Drizzle + libsql · better-auth · Stripe · vitest · Playwright · 
 | `pnpm test:e2e` | Playwright against a fresh prod build + mock platform |
 | `pnpm db:generate` | New migration after editing `src/db/schema.ts` |
 | `pnpm credits <email> <n>` | Grant credits without Stripe |
+| `pnpm reset:total [--deps] [--keep-uploads] [--yes] [--dry-run]` | Wipe local DB, uploads, build and test artifacts, then re-migrate (skill `reset-total`) |
 
 Set `PLAYWRIGHT_CHROMIUM_PATH` to reuse a Chromium already on disk.
 

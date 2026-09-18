@@ -15,7 +15,8 @@
     "db:studio": "drizzle-kit studio",
     "credits": "node scripts/credits.mjs",
     "mock:platform": "node scripts/mock-platform.mjs",
-    "brand": "node scripts/build-brand-assets.mjs"
+    "brand": "node scripts/build-brand-assets.mjs",
+    "reset:total": "node scripts/reset-total.mjs"
   },
   "dependencies": {
     "@libsql/client": "0.18.0",
