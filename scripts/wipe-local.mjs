@@ -6,7 +6,7 @@
    What stays: .env, source, git. Then the database is recreated by running
    the migrations, so `pnpm dev` starts on an empty studio.
 
-     node scripts/reset-total.mjs [--deps] [--keep-uploads] [--yes] [--dry-run]
+     node scripts/wipe-local.mjs [--deps] [--keep-uploads] [--yes] [--dry-run]
 */
 import { execSync } from "node:child_process";
 import { existsSync, readdirSync, rmSync } from "node:fs";
@@ -20,7 +20,7 @@ const dryRun = args.has("--dry-run");
 
 const remoteDb = Boolean(process.env.DATABASE_URL?.trim() && !process.env.DATABASE_URL.trim().startsWith("file:"));
 if (remoteDb) {
-  console.error("[reset-total] DATABASE_URL points at a remote database. This script only resets local files; unset it or point it at a file: URL.");
+  console.error("[wipe-local] DATABASE_URL points at a remote database. This script only resets local files; unset it or point it at a file: URL.");
   process.exit(1);
 }
 
@@ -36,7 +36,7 @@ targets.push(resolve(root, ".next"), resolve(root, "test-results"), resolve(root
 if (args.has("--deps")) targets.push(resolve(root, "node_modules"));
 
 const present = targets.filter((path) => existsSync(path));
-console.log("[reset-total] will remove:");
+console.log("[wipe-local] will remove:");
 for (const path of present) console.log(`  ${path.replace(`${root}/`, "")}`);
 if (present.length === 0) console.log("  (nothing — already clean)");
 
@@ -46,7 +46,7 @@ if (!args.has("--yes") && process.stdin.isTTY) {
   const answer = (await rl.question("Type RESET to continue: ")).trim();
   rl.close();
   if (answer !== "RESET") {
-    console.log("[reset-total] aborted");
+    console.log("[wipe-local] aborted");
     process.exit(1);
   }
 }
@@ -56,4 +56,4 @@ for (const path of present) rmSync(path, { recursive: true, force: true });
 const run = (command) => execSync(command, { cwd: root, stdio: "inherit" });
 if (args.has("--deps")) run("pnpm install --frozen-lockfile");
 run("node scripts/migrate.mjs");
-console.log("[reset-total] done — `pnpm dev` starts on an empty studio");
+console.log("[wipe-local] done — `pnpm dev` starts on an empty studio");

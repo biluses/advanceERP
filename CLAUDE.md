@@ -14,7 +14,13 @@ Zustand · Drizzle + libsql · better-auth · Stripe · vitest · Playwright · 
 | `pnpm test:e2e` | Playwright against a fresh prod build + mock platform |
 | `pnpm db:generate` | New migration after editing `src/db/schema.ts` |
 | `pnpm credits <email> <n>` | Grant credits without Stripe |
-| `pnpm reset:total [--deps] [--keep-uploads] [--yes] [--dry-run]` | Wipe local DB, uploads, build and test artifacts, then re-migrate (skill `reset-total`) |
+| `pnpm wipe:local [--deps] [--keep-uploads] [--yes] [--dry-run]` | Wipe local DB, uploads, build and test artifacts, then re-migrate (skill `wipe-local`) |
+
+## Skills
+
+- `reset-total` — close the session before a compact or restart: state file in
+  `docs/sessions/`, durable rules into this file, resume prompt.
+- `wipe-local` — destructive local reset of data, build and artifacts.
 
 Set `PLAYWRIGHT_CHROMIUM_PATH` to reuse a Chromium already on disk.
 

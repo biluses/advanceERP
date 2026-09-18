@@ -16,7 +16,7 @@
     "credits": "node scripts/credits.mjs",
     "mock:platform": "node scripts/mock-platform.mjs",
     "brand": "node scripts/build-brand-assets.mjs",
-    "reset:total": "node scripts/reset-total.mjs"
+    "wipe:local": "node scripts/wipe-local.mjs"
   },
   "dependencies": {
     "@libsql/client": "0.18.0",
