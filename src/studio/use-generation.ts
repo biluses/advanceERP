@@ -91,10 +91,12 @@ export function useGeneration(initial: ServerRunRecord[], initialCredits: number
 
   useEffect(() => {
     alive.current = true;
+    const timers = freshTimers.current;
     return () => {
       alive.current = false;
       stopWatching();
-      for (const timer of freshTimers.current) clearTimeout(timer);
+      for (const timer of timers) clearTimeout(timer);
+      timers.length = 0;
     };
   }, []);
 

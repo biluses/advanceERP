@@ -14,7 +14,6 @@ function resolveUrl(): { url: string; authToken?: string } {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __vitrinaDb: { client: Client; db: Db } | undefined;
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useState } from "react";
 import type { CSSProperties } from "react";
 
 import type { RunRecord } from "./history";
@@ -39,10 +39,10 @@ export function SelectionBar({
   onClose: () => void;
 }) {
   const on = records.length > 0;
-  /* The exiting bar keeps saying what it was acting on. */
-  const held = useRef(records);
-  if (on) held.current = records;
-  const shown = held.current;
+  /* The exiting bar keeps saying what it was acting on: the last non-empty
+     selection is held as state and only replaced by another non-empty one. */
+  const [shown, setShown] = useState(records);
+  if (on && shown !== records) setShown(records);
 
   const count = shown.length;
   const saveable = shown.filter((record) => record.urls[0]).length;

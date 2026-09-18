@@ -143,15 +143,19 @@ export function AssetPicker({
     onClose();
   }
 
+  /* A file that just finished uploading joins the selection — an external
+     event (the tray's upload) arriving through props, hence the effect. */
   useEffect(() => {
     if (staged === null || staged === seen.current) return;
     seen.current = staged;
     if (max === 1) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reacts to the upload landing
       setSelected([staged]);
       commit([staged]);
       return;
     }
     setSelected((prev) => (prev.includes(staged) ? prev : [...prev, staged]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only the arrival of a new upload should re-run this
   }, [staged]);
 
   function toggle(url: string) {

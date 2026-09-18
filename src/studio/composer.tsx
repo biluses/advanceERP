@@ -187,11 +187,13 @@ export function Composer({
   /* A panel anchored to a control the visitor can no longer see is a stray
      plate — the swap closes whatever the composer had open. */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reacts to a parent-owned mode switch
     if (selecting) setOverlay(null);
   }, [selecting]);
 
   // Rendered only after mount: the modifier is the visitor's, not the server's.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- navigator is read after hydration on purpose
     setShortcut(/Mac|iP(hone|ad|od)/.test(navigator.userAgent) ? "⌘↵" : "Ctrl↵");
   }, []);
 

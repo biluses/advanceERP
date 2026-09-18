@@ -8,7 +8,7 @@ import { useActive } from "@/generation/stores/active";
 import { useImageMedia, useVideoMedia } from "@/generation/stores/media";
 import { useImagePrompt, useVideoPrompt } from "@/generation/stores/prompt";
 import { useSettings } from "@/generation/stores/settings";
-import { pickModel, resolveSettings } from "@/domain/prompt";
+import { resolveSettings } from "@/domain/prompt";
 import type { KeyStatus } from "@/generation/actions";
 
 import { GRAIN_URI } from "./artwork";
@@ -48,8 +48,8 @@ export function StudioApp({ data, fontClassName = "" }: { data: StudioData; font
 
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [view, setView] = useState<GalleryView>(surface);
-  const [productFilter, setProductFilter] = useState<string | null>(null);
-  const [reviewFilter, setReviewFilter] = useState<ReviewFilter>("all");
+  const [productFilter, setProductFilterState] = useState<string | null>(null);
+  const [reviewFilter, setReviewFilterState] = useState<ReviewFilter>("all");
   const [focusNonce, setFocusNonce] = useState(0);
   /* Deleting drops the only copy of a run — the platform's result URLs are not
      re-derivable — so the records are held aside until the bar times out. */
@@ -71,23 +71,17 @@ export function StudioApp({ data, fontClassName = "" }: { data: StudioData; font
   }, [data.products, jobIds]);
 
   /* The model picker can cross surfaces, so the scope follows it — unless the
-     visitor parked on a scope that spans both. */
-  useEffect(() => {
-    setView((current) => (CROSS_VIEWS.has(current) ? current : surface));
-  }, [surface]);
+     visitor parked on a scope that spans both. Synchronised during render,
+     the way React asks derived state to be. */
+  const [seenSurface, setSeenSurface] = useState(surface);
+  if (seenSurface !== surface) {
+    setSeenSurface(surface);
+    if (!CROSS_VIEWS.has(view)) setView(surface);
+  }
 
-  /* A preset chooses the model; a preset or channel chooses the dials. Both
-     stay editable afterwards — the job sets the table, it does not lock it. */
-  const lastPreset = useRef<string | null>(null);
-  useEffect(() => {
-    const preset = job.preset;
-    if (preset && preset.id !== lastPreset.current) {
-      const picked = pickModel(preset, MODELS);
-      if (picked.id !== modelId) setModel(picked.id);
-    }
-    lastPreset.current = preset?.id ?? null;
-  }, [job.preset, modelId, setModel]);
-
+  /* A preset or channel chooses the dials; the preset picker itself chooses
+     the model when one is picked. Both stay editable afterwards — the job
+     sets the table, it does not lock it. */
   useEffect(() => {
     if (!job.preset && !job.channel) return;
     setSettings(model.id, resolveSettings(model, job.preset, job.channel));
@@ -116,9 +110,13 @@ export function StudioApp({ data, fontClassName = "" }: { data: StudioData; font
     return list;
   }, [history, view, productFilter, reviewFilter]);
 
+  /* Switching scope or filter switches what "everything picked" means, so
+     the selection does not travel with it. */
   const switchView = useCallback(
     (next: GalleryView) => {
       setView(next);
+      setSelected([]);
+      rangeAnchor.current = null;
       galleryRef.current?.scrollTo({ top: 0 });
       if (CROSS_VIEWS.has(next) || next === surface) return;
       const first = MODELS.find((entry) => entry.surface === next);
@@ -200,34 +198,39 @@ export function StudioApp({ data, fontClassName = "" }: { data: StudioData; font
 
   /* ---------- picking runs ---------- */
 
-  const pickedSet = useMemo(() => new Set(selected), [selected]);
+  /* A run that left the grid cannot stay picked — deleted, or released from
+     the shelf while the Favorites scope was the one on screen. The selection
+     is read through the visible set rather than pruned by an effect. */
+  const visibleIds = useMemo(() => new Set(visible.map((record) => record.id)), [visible]);
+  const pickedSet = useMemo(() => new Set(selected.filter((id) => visibleIds.has(id))), [selected, visibleIds]);
   const byId = useMemo(() => new Map(history.map((record) => [record.id, record])), [history]);
   const pickedRecords = useMemo(
-    () => selected.map((id) => byId.get(id)).filter((record) => record !== undefined),
-    [selected, byId],
+    () => selected.filter((id) => visibleIds.has(id)).map((id) => byId.get(id)).filter((record) => record !== undefined),
+    [selected, visibleIds, byId],
   );
 
   useEffect(() => {
     visibleRef.current = visible;
   }, [visible]);
 
-  const visibleIds = useMemo(() => new Set(visible.map((record) => record.id)), [visible]);
-  useEffect(() => {
-    setSelected((prev) => {
-      const next = prev.filter((id) => visibleIds.has(id));
-      return next.length === prev.length ? prev : next;
-    });
-  }, [visibleIds]);
-
-  useEffect(() => {
-    setSelected([]);
-    rangeAnchor.current = null;
-  }, [view, productFilter, reviewFilter]);
-
   const clearPicked = useCallback(() => {
     setSelected([]);
     rangeAnchor.current = null;
   }, []);
+  const setProductFilter = useCallback(
+    (id: string | null) => {
+      setProductFilterState(id);
+      clearPicked();
+    },
+    [clearPicked],
+  );
+  const setReviewFilter = useCallback(
+    (next: ReviewFilter) => {
+      setReviewFilterState(next);
+      clearPicked();
+    },
+    [clearPicked],
+  );
 
   const togglePick = useCallback((id: string, index: number, range: boolean) => {
     const from = rangeAnchor.current;
@@ -246,24 +249,24 @@ export function StudioApp({ data, fontClassName = "" }: { data: StudioData; font
   }, []);
 
   useEffect(() => {
-    if (selected.length === 0 || viewerId) return;
+    if (pickedSet.size === 0 || viewerId) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") clearPicked();
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [selected.length, viewerId, clearPicked]);
+  }, [pickedSet.size, viewerId, clearPicked]);
 
   const favoritePicked = useCallback(() => {
     const keep = !pickedRecords.every((record) => record.favorite);
-    gen.favoriteMany(selected, keep);
-  }, [selected, pickedRecords, gen]);
+    gen.favoriteMany(pickedRecords.map((record) => record.id), keep);
+  }, [pickedRecords, gen]);
 
   const reviewPicked = useCallback(
     (verdict: RunRecord["review"]) => {
-      gen.review(selected, verdict);
+      gen.review(pickedRecords.map((record) => record.id), verdict);
     },
-    [selected, gen],
+    [pickedRecords, gen],
   );
 
   const deletePicked = useCallback(() => {
@@ -381,7 +384,7 @@ export function StudioApp({ data, fontClassName = "" }: { data: StudioData; font
             brand={data.brand}
             job={job}
             initialUploads={data.uploads}
-            selecting={selected.length > 0}
+            selecting={pickedSet.size > 0}
             selection={
               <SelectionBar
                 records={pickedRecords}

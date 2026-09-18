@@ -4,8 +4,10 @@ import { useEffect, useRef, useState } from "react";
 
 import type { Product } from "@/domain/brand";
 import { CHANNELS, channelsFor } from "@/domain/channels";
-import { PRESETS, presetsFor } from "@/domain/presets";
-import type { Surface } from "@/generation/catalog";
+import { PRESETS, findPreset, presetsFor } from "@/domain/presets";
+import { pickModel } from "@/domain/prompt";
+import { MODELS, type Surface } from "@/generation/catalog";
+import { useActive } from "@/generation/stores/active";
 
 import { CaretDownIcon, CheckIcon, CloseIcon, SearchIcon } from "./icons";
 import type { Job } from "./job";
@@ -272,6 +274,10 @@ export function JobPicker({
         searchable
         onPick={(id) => {
           setPreset(id);
+          /* The preset knows which models do its job well; the first one the
+             catalog carries becomes the composer's, still free to change. */
+          const preset = findPreset(id);
+          if (preset) useActive.getState().setModel(pickModel(preset, MODELS).id);
           onClose();
         }}
         onClose={onClose}

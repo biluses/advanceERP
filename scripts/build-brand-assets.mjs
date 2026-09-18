@@ -1,9 +1,9 @@
 /* Builds every raster brand asset from the one mark geometry.
 
-   The mark is authored once as SVG (src/app/icon.svg for the favicon,
-   src/components/VitrinaMark.tsx for the interface). Apple, the web app
-   manifest and Open Graph all need rasters, so this script draws the same
-   32-unit field in a headless Chromium and screenshots it at each size.
+   The mark is authored once as SVG (src/app/icon.svg for the favicon, the
+   CSS .vt-side-mark for the interface). Apple, the web app manifest and Open
+   Graph all need rasters, so this script draws the same 32-unit field in a
+   headless Chromium and screenshots it at each size.
 
      node scripts/build-brand-assets.mjs
 
@@ -19,14 +19,18 @@ import { join, resolve } from "node:path";
 /* ---------- the mark ---------- */
 
 const PLATE = "#0e1011";
-const ACCENT = "#6fe3c0";
+const ACCENT = "#d1fe17";
 const INK = "#c2c9c8";
 
-/** The two brackets on a 32-unit field. Keep in step with src/app/icon.svg. */
+/** The Vitrina mark on a 32-unit field: a shop window — an open frame — with
+    the product standing on its shelf as the one point of accent. Keep in step
+    with src/app/icon.svg. */
 function brackets({ stroke = 2.5, accent = ACCENT, ink = INK } = {}) {
   return `<g fill="none" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M19.5 6.5H8.9A2.4 2.4 0 0 0 6.5 8.9V17" stroke="${accent}"/>
-    <path d="M12.5 25.5H23.1a2.4 2.4 0 0 0 2.4-2.4V15" stroke="${ink}"/>
+    <path d="M6.5 11.5V8.9A2.4 2.4 0 0 1 8.9 6.5h14.2a2.4 2.4 0 0 1 2.4 2.4v2.6" stroke="${ink}"/>
+    <path d="M6.5 20.5v2.6a2.4 2.4 0 0 0 2.4 2.4h14.2a2.4 2.4 0 0 0 2.4-2.4v-2.6" stroke="${ink}"/>
+    <path d="M11 20.5h10" stroke="${accent}"/>
+    <circle cx="16" cy="15.2" r="3.1" stroke="${accent}"/>
   </g>`;
 }
 
@@ -55,6 +59,7 @@ const GRAIN =
 function findChrome() {
   const candidates = [
     process.env.CHROME_BIN,
+    "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
     ...["1237", "1228"].map((build) =>
       join(
         homedir(),
@@ -86,6 +91,7 @@ function shoot(out, html, width, height, { transparent = false } = {}) {
     CHROME,
     [
       "--headless",
+      "--no-sandbox",
       "--disable-gpu",
       "--hide-scrollbars",
       "--force-device-scale-factor=1",
@@ -141,7 +147,7 @@ const og = `<!doctype html><meta charset="utf-8">
   body{
     position:relative;
     background:
-      radial-gradient(110% 85% at 4% -8%, rgba(111,227,192,0.06), transparent 56%),
+      radial-gradient(110% 85% at 4% -8%, rgba(209,254,23,0.06), transparent 56%),
       radial-gradient(95% 115% at 104% 108%, rgba(255,255,255,0.032), transparent 60%),
       #0a0a0b;
     color:#edefef;
@@ -164,13 +170,13 @@ const og = `<!doctype html><meta charset="utf-8">
   .rule{margin:34px 0 28px;width:455px;height:1px;background:rgba(255,255,255,.09)}
   p{font-size:24px;line-height:1.45;color:#a8aeaf;max-width:530px;letter-spacing:-.011em}
 </style>
-<div class="field">${markSvg(454, { stroke: 1.15, accent: "rgba(111,227,192,0.17)", ink: "rgba(255,255,255,0.085)" })}</div>
+<div class="field">${markSvg(454, { stroke: 1.15, accent: "rgba(209,254,23,0.2)", ink: "rgba(255,255,255,0.085)" })}</div>
 <div class="band mark">${markSvg(58, { stroke: 2.5 })}</div>
 <div class="mid"><div class="band">
   <h1>Vitrina</h1>
-  <div class="descriptor">Open source AI studio</div>
+  <div class="descriptor">AI product visuals for e-commerce</div>
   <div class="rule"></div>
-  <p>One prompt bar for image and video. Each model&rsquo;s own settings, and every finished run in one gallery.</p>
+  <p>Product photos and clips for every channel, from the photo you already have. Presets, brand kit, channels.</p>
 </div></div>
 <div class="grain"></div>`;
 
