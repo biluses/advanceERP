@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getViewer, WORKSPACE_COOKIE, WORKSPACE_COOKIE_OPTIONS } from "@/server/session";
+import { publicOrigin } from "@/server/storage";
 import { acceptInvite, InviteError } from "@/server/workspaces";
 
 /** The landing for an invitation link. Signed out, it sends the visitor to
@@ -10,7 +11,8 @@ import { acceptInvite, InviteError } from "@/server/workspaces";
     page render can be retried. */
 export async function GET(request: Request, context: { params: Promise<{ token: string }> }): Promise<NextResponse> {
   const { token } = await context.params;
-  const origin = new URL(request.url).origin;
+  /* APP_URL when set, so a forged Host header cannot turn this into a redirect elsewhere. */
+  const origin = publicOrigin(request);
   const viewer = await getViewer();
   if (!viewer) {
     return NextResponse.redirect(`${origin}/register?next=${encodeURIComponent(`/join/${token}`)}`);

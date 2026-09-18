@@ -18,6 +18,7 @@ Copy `.env.example` to `.env` and fill in:
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | billing | |
 | `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_STUDIO` | billing | Recurring monthly prices |
 | `RESEND_API_KEY`, `MAIL_FROM` | mail | Enables password reset by email; absent, the link is hidden |
+| `SIGNUPS` | no | `closed` refuses new accounts on a private install |
 
 Migrations run automatically when the server boots. `pnpm start` serves the
 standalone build (the same artifact the Dockerfile ships).

@@ -15,6 +15,10 @@ if (!secret && process.env.NODE_ENV === "production" && !building) {
   throw new Error("Missing APP_SECRET — set it before starting the server");
 }
 
+export function signupsClosed(): boolean {
+  return process.env.SIGNUPS?.trim().toLowerCase() === "closed";
+}
+
 export const auth = betterAuth({
   appName: "Vitrina",
   secret: secret ?? "vitrina-dev-secret-change-me",
@@ -31,6 +35,11 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
+    /* A private install can close the door: SIGNUPS=closed refuses new
+       accounts at the API and the register page says so. Invitations still
+       create accounts through the same door, so the setting is for studios
+       that seat people by hand. */
+    disableSignUp: signupsClosed(),
     /* No mail provider is wired in by default; a self-hosted install has no
        need for a verification round trip, and a SaaS operator can turn it on
        once they have a sender. */

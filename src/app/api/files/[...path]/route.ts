@@ -20,6 +20,9 @@ export async function GET(_request: Request, context: { params: Promise<{ path: 
     headers: {
       "Content-Type": contentTypeFor(file),
       "Content-Length": String(info.size),
+      /* Whatever bytes were uploaded, the browser treats them as the declared
+         media type and never as a document. */
+      "X-Content-Type-Options": "nosniff",
       "Cache-Control": "public, max-age=31536000, immutable",
     },
   });
