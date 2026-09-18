@@ -29,7 +29,9 @@ export default defineConfig({
       reuseExistingServer: false,
     },
     {
-      command: `rm -rf data/e2e && node scripts/start-standalone.mjs`,
+      /* Migrate before the server listens: the boot migration also runs, but
+         the first request must not race it. */
+      command: `rm -rf data/e2e && node scripts/migrate.mjs && node scripts/start-standalone.mjs`,
       port: PORT,
       timeout: 120_000,
       reuseExistingServer: false,
