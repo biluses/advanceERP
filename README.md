@@ -26,8 +26,9 @@ Stripe plans) or run self-hosted where every workspace brings its own key.
 - **Campaigns** — one product × a set of presets × channels, generated in one
   press, reviewed per channel, exported as a zip filed
   `brand/product/channel/preset-01.jpg`.
-- **Workspaces & accounts** — email/password sign-in, a workspace per account,
-  trial credits on sign-up.
+- **Workspaces & accounts** — email/password sign-in, trial credits on
+  sign-up, invite links with seats per plan, several brands per account with
+  a workspace switcher, password reset by email when a sender is configured.
 - **Credits & billing** — integer credits reserved before a run and refunded
   on failure, Stripe Checkout, customer portal, idempotent webhook, a manual
   grant script for installs without Stripe.

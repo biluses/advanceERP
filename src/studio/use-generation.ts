@@ -7,7 +7,7 @@ import { getModel } from "@/generation/catalog";
 import type { GenerationPlane, Surface } from "@/generation/catalog";
 import { MissingCredentialsError } from "@/generation/credentials";
 import { POLL_DEADLINE_MS, stopWatching, watchRequest } from "@/generation/poll";
-import { deleteRuns as deleteRunsAction, restoreRuns, setFavorite, setReview } from "@/server/actions/runs";
+import { deleteRuns as deleteRunsAction, listRuns, restoreRuns, setFavorite, setReview } from "@/server/actions/runs";
 import type { RunContext, RunRecord as ServerRunRecord } from "@/server/runs";
 
 import { countSetting, durationBadge, metaOf, ratioToCss } from "./data";
@@ -39,6 +39,10 @@ export type GenerationApi = {
   busy: boolean;
   /** Credits the workspace holds, as last reported by the server. */
   credits: number | null;
+  /** Older runs exist beyond what is loaded. */
+  hasMore: boolean;
+  loadingMore: boolean;
+  loadOlder: () => Promise<void>;
   setError: (message: string | null) => void;
   generate: (job: GenerateJob) => Promise<void>;
   toggleFavorite: (record: RunRecord) => void;
@@ -70,8 +74,10 @@ export function describeError(caught: unknown): string {
 /** The generation lifecycle, shared by the studio and the campaign page:
     optimistic tiles, one server action per press, a watch per request and the
     server's settled rows written back over the skeletons. */
-export function useGeneration(initial: ServerRunRecord[], initialCredits: number | null): GenerationApi {
+export function useGeneration(initial: ServerRunRecord[], initialCredits: number | null, initialHasMore = false): GenerationApi {
   const [history, setHistory] = useState<RunRecord[]>(() => decorateAll(initial));
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [runs, setRuns] = useState<ActiveRun[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [freshIds, setFreshIds] = useState<string[]>([]);
@@ -239,6 +245,23 @@ export function useGeneration(initial: ServerRunRecord[], initialCredits: number
     void restoreRuns(records.map((record) => record.id)).catch(() => {});
   }, []);
 
+  /* The next page starts before the oldest run on screen. */
+  const loadOlder = useCallback(async () => {
+    if (loadingMore) return;
+    const oldest = historyRef.current.reduce<number | null>((min, record) => (min === null || record.createdAt < min ? record.createdAt : min), null);
+    setLoadingMore(true);
+    try {
+      const page = await listRuns(oldest);
+      if (!alive.current) return;
+      setHistory((prev) => mergeHistory(prev, decorateAll(page.runs)));
+      setHasMore(page.hasMore);
+    } catch (caught) {
+      if (alive.current) setError((prev) => prev ?? describeError(caught));
+    } finally {
+      if (alive.current) setLoadingMore(false);
+    }
+  }, [loadingMore]);
+
   const busy = runs.length > 0 || history.some((record) => record.status === "running");
 
   return useMemo(
@@ -249,6 +272,9 @@ export function useGeneration(initial: ServerRunRecord[], initialCredits: number
       freshIds,
       busy,
       credits,
+      hasMore,
+      loadingMore,
+      loadOlder,
       setError,
       generate,
       toggleFavorite,
@@ -257,6 +283,6 @@ export function useGeneration(initial: ServerRunRecord[], initialCredits: number
       remove,
       restore,
     }),
-    [history, runs, error, freshIds, busy, credits, generate, toggleFavorite, favoriteMany, review, remove, restore],
+    [history, runs, error, freshIds, busy, credits, hasMore, loadingMore, loadOlder, generate, toggleFavorite, favoriteMany, review, remove, restore],
   );
 }

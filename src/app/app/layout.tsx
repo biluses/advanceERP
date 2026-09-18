@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { getViewer } from "@/server/session";
+import { workspacesForUser } from "@/server/workspaces";
 import { Sidebar } from "@/ui/sidebar";
 
 import "@/studio/studio.css";
@@ -16,10 +17,13 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-vt-inter", display: 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const viewer = await getViewer();
   if (!viewer) redirect("/login");
+  const memberships = await workspacesForUser(viewer.user.id);
   return (
     <div className={`vt vt-app ${inter.variable}`}>
       <Sidebar
+        workspaceId={viewer.workspace.id}
         workspaceName={viewer.workspace.name}
+        workspaces={memberships.map((entry) => ({ id: entry.workspace.id, name: entry.workspace.name, role: entry.role }))}
         planId={viewer.workspace.planId}
         credits={viewer.workspace.creditBalance}
         byok={Boolean(viewer.workspace.platformKeySealed)}

@@ -6,7 +6,16 @@ import { useState, type FormEvent } from "react";
 
 import { signIn, signUp } from "@/auth/client";
 
-export function AuthForm({ mode }: { mode: "login" | "register" }) {
+export function AuthForm({
+  mode,
+  next = "/app",
+  canReset = false,
+}: {
+  mode: "login" | "register";
+  next?: string;
+  /* Shown only when the studio can actually send the email. */
+  canReset?: boolean;
+}) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -27,7 +36,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       setError(result.error.message ?? "Something went wrong");
       return;
     }
-    router.push("/app");
+    router.push(next);
     router.refresh();
   }
 
@@ -82,14 +91,20 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         {busy ? "One moment…" : mode === "register" ? "Create account" : "Sign in"}
       </button>
 
+      {mode === "login" && canReset && (
+        <p className="vt-auth-switch">
+          <Link href="/forgot-password">Forgot your password?</Link>
+        </p>
+      )}
+
       <p className="vt-auth-switch">
         {mode === "register" ? (
           <>
-            Already have an account? <Link href="/login">Sign in</Link>
+            Already have an account? <Link href={next === "/app" ? "/login" : `/login?next=${encodeURIComponent(next)}`}>Sign in</Link>
           </>
         ) : (
           <>
-            New here? <Link href="/register">Create your studio</Link>
+            New here? <Link href={next === "/app" ? "/register" : `/register?next=${encodeURIComponent(next)}`}>Create your studio</Link>
           </>
         )}
       </p>

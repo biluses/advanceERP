@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 
 import { db, schema } from "@/db/client";
+import { mailConfigured, sendMail } from "@/server/mail";
 import { bootstrapWorkspace } from "@/server/workspaces";
 
 const secret = process.env.APP_SECRET?.trim();
@@ -34,6 +35,17 @@ export const auth = betterAuth({
        need for a verification round trip, and a SaaS operator can turn it on
        once they have a sender. */
     requireEmailVerification: false,
+    /* Password resets go out only when a sender exists; the login page hides
+       the link otherwise. */
+    sendResetPassword: async ({ user, url }) => {
+      if (!mailConfigured()) throw new Error("Password reset is not available on this studio");
+      await sendMail({
+        to: user.email,
+        subject: "Reset your Vitrina password",
+        text: `Someone asked to reset the password for ${user.email}. Open this link to choose a new one:\n\n${url}\n\nIf that was not you, ignore this message.`,
+      });
+    },
+    resetPasswordTokenExpiresIn: 60 * 60,
   },
   session: {
     expiresIn: 60 * 60 * 24 * 30,

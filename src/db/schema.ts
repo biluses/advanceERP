@@ -106,6 +106,26 @@ export const membership = sqliteTable(
   (table) => [primaryKey({ columns: [table.workspaceId, table.userId] }), index("membership_user_idx").on(table.userId)],
 );
 
+/** An invitation link. Whoever signs in holding the token joins the
+    workspace, up to the plan's seats. */
+export const invite = sqliteTable(
+  "invite",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    token: text("token").notNull().unique(),
+    role: text("role", { enum: ["owner", "editor"] }).notNull().default("editor"),
+    createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    acceptedBy: text("accepted_by").references(() => user.id, { onDelete: "set null" }),
+    acceptedAt: integer("accepted_at", { mode: "timestamp_ms" }),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [index("invite_workspace_idx").on(table.workspaceId)],
+);
+
 export const brandKit = sqliteTable("brand_kit", {
   workspaceId: text("workspace_id")
     .primaryKey()
@@ -267,6 +287,7 @@ export const stripeEvent = sqliteTable("stripe_event", {
 });
 
 export type Workspace = typeof workspace.$inferSelect;
+export type InviteRow = typeof invite.$inferSelect;
 export type ProductRow = typeof product.$inferSelect;
 export type ProductAssetRow = typeof productAsset.$inferSelect;
 export type RunRow = typeof run.$inferSelect;

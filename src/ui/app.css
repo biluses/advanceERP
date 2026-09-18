@@ -100,6 +100,17 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.vt-side-ws-select {
+  width: 100%;
+  background: var(--s1);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--tx);
+  font: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 4px 6px;
+}
 .vt-side-ws-plan {
   font-size: 12px;
   color: var(--tx4);
@@ -670,6 +681,53 @@ select.vt-input {
 }
 .vt-table-note {
   color: var(--tx4);
+}
+
+.vt-members {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.vt-member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--s2);
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+.vt-member-name {
+  font-weight: 600;
+}
+.vt-member-name em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--tx4);
+}
+.vt-member-email {
+  color: var(--tx4);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vt-member-link {
+  flex: 1;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--tx2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.vt-member .vt-btn-quiet {
+  margin-left: auto;
+}
+.vt-member .vt-btn-quiet + .vt-btn-quiet {
+  margin-left: 0;
 }
 
 /* ---------- plans ---------- */

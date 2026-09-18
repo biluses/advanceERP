@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { signOut } from "@/auth/client";
+import { switchWorkspace, type WorkspaceOption } from "@/server/actions/team";
 import { getPlan } from "@/domain/plans";
 import { AssetsIcon, GemIcon, ImageIcon, SlidersIcon, TagIcon, VideoIcon } from "@/studio/icons";
 import { useCredits } from "@/studio/stores/credits";
@@ -17,13 +18,17 @@ const NAV = [
 ] as const;
 
 export function Sidebar({
+  workspaceId,
   workspaceName,
+  workspaces,
   planId,
   credits,
   byok,
   userName,
 }: {
+  workspaceId: string;
   workspaceName: string;
+  workspaces: WorkspaceOption[];
   planId: string;
   credits: number;
   byok: boolean;
@@ -60,7 +65,27 @@ export function Sidebar({
 
       <div className="vt-side-foot">
         <div className="vt-side-ws">
-          <span className="vt-side-ws-name">{workspaceName}</span>
+          {workspaces.length > 1 ? (
+            <select
+              className="vt-side-ws-select"
+              value={workspaceId}
+              aria-label="Workspace"
+              onChange={(event) =>
+                void switchWorkspace(event.target.value).then(() => {
+                  router.push("/app");
+                  router.refresh();
+                })
+              }
+            >
+              {workspaces.map((workspace) => (
+                <option key={workspace.id} value={workspace.id}>
+                  {workspace.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="vt-side-ws-name">{workspaceName}</span>
+          )}
           <span className="vt-side-ws-plan">
             {plan.label}
             {byok ? " · own key" : ""}

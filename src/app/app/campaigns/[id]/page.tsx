@@ -5,7 +5,7 @@ import { platformKeyStatus } from "@/generation/actions";
 import { readBrandKit } from "@/server/actions/brand";
 import { getCampaign } from "@/server/actions/campaigns";
 import { getProduct } from "@/server/actions/products";
-import { listRuns } from "@/server/runs";
+import { listCampaignRuns } from "@/server/runs";
 import { viewerOrRedirect } from "@/server/session";
 import { CampaignView } from "@/ui/campaign-view";
 
@@ -20,7 +20,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
   const [product, brand, runs, key] = await Promise.all([
     getProduct(campaign.productId),
     readBrandKit(viewer.workspace.id),
-    listRuns(viewer.workspace.id),
+    listCampaignRuns(viewer.workspace.id, campaign.id),
     platformKeyStatus(),
   ]);
   if (!product) notFound();
@@ -29,7 +29,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
       campaign={campaign}
       product={product}
       brand={brand}
-      runs={runs.filter((run) => run.campaignId === campaign.id)}
+      runs={runs}
       credits={viewer.workspace.creditBalance}
       keyStatus={key}
     />

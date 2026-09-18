@@ -9,7 +9,7 @@ import type { Viewer } from "./session";
 
 /** One read per studio page load, on the server, so the grid opens full. */
 export async function loadStudioData(viewer: Viewer): Promise<StudioData> {
-  const [runs, uploads, products, brand] = await Promise.all([
+  const [page, uploads, products, brand] = await Promise.all([
     listRuns(viewer.workspace.id),
     listUploads(),
     listProducts(),
@@ -17,7 +17,8 @@ export async function loadStudioData(viewer: Viewer): Promise<StudioData> {
   ]);
   const byok = Boolean(viewer.workspace.platformKeySealed);
   return {
-    runs,
+    runs: page.runs,
+    hasMore: page.hasMore,
     uploads,
     products,
     brand,

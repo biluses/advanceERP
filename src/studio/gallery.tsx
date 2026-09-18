@@ -344,6 +344,7 @@ const Tile = memo(function Tile({
 export const Gallery = memo(function Gallery({
   view,
   filters,
+  footer,
   surface,
   items,
   runs,
@@ -362,6 +363,8 @@ export const Gallery = memo(function Gallery({
   /* The product and review cuts, drawn at the head of the panel so they
      scroll with the work rather than crowding the floating bar. */
   filters?: ReactNode;
+  /* Whatever follows the last row — the way to older runs. */
+  footer?: ReactNode;
   surface: Surface;
   items: RunRecord[];
   runs: ActiveRun[];
@@ -411,6 +414,7 @@ export const Gallery = memo(function Gallery({
         onDownload={onDownload}
         onDelete={onDelete}
       />
+      {footer}
     </div>
   );
 });

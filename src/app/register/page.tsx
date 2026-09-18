@@ -8,11 +8,17 @@ import { AuthShell } from "@/ui/auth-shell";
 export const metadata: Metadata = { title: "Create your studio" };
 export const dynamic = "force-dynamic";
 
-export default async function RegisterPage() {
-  if (await getViewer()) redirect("/app");
+/** Only same-origin paths may be a return target. */
+function safeNext(value: string | undefined): string {
+  return value && value.startsWith("/") && !value.startsWith("//") ? value : "/app";
+}
+
+export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const next = safeNext((await searchParams).next);
+  if (await getViewer()) redirect(next);
   return (
     <AuthShell>
-      <AuthForm mode="register" />
+      <AuthForm mode="register" next={next} />
     </AuthShell>
   );
 }

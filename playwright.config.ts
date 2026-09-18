@@ -29,18 +29,22 @@ export default defineConfig({
       reuseExistingServer: false,
     },
     {
-      command: `rm -rf data/e2e && node scripts/migrate.mjs && next start --port ${PORT}`,
+      command: `rm -rf data/e2e && node scripts/start-standalone.mjs`,
       port: PORT,
       timeout: 120_000,
       reuseExistingServer: false,
       env: {
         NODE_ENV: "production",
+        PORT: String(PORT),
+        HOSTNAME: "127.0.0.1",
         HF_API_BASE_URL: `http://localhost:${MOCK_PORT}`,
         APP_SECRET: "e2e-secret-not-for-production",
         APP_URL: `http://localhost:${PORT}`,
         PLATFORM_API_KEY: "e2e-id:e2e-secret",
-        DATABASE_URL: "file:./data/e2e/vitrina.db",
-        DATA_DIR: "./data/e2e",
+        /* The standalone server runs from .next/standalone, so the paths are
+           absolute to keep the throwaway database in the repo's data folder. */
+        DATABASE_URL: `file:${process.cwd()}/data/e2e/vitrina.db`,
+        DATA_DIR: `${process.cwd()}/data/e2e`,
         STORAGE_DRIVER: "local",
         NEXT_PUBLIC_STORAGE_DRIVER: "local",
       },

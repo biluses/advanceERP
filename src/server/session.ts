@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
@@ -20,13 +20,25 @@ export type Viewer = {
   role: "owner" | "editor";
 };
 
+/** Remembers which of a member's workspaces is on screen. */
+export const WORKSPACE_COOKIE = "vt_workspace";
+
+export const WORKSPACE_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/",
+  maxAge: 60 * 60 * 24 * 365,
+};
+
 /** The signed-in user and the workspace they act in, read once per request.
     Every server action and page goes through here, so a request without a
     session cannot reach a query. */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return null;
-  const { workspace, role } = await workspaceForUser(session.user.id);
+  const jar = await cookies();
+  const { workspace, role } = await workspaceForUser(session.user.id, jar.get(WORKSPACE_COOKIE)?.value);
   return {
     user: { id: session.user.id, name: session.user.name, email: session.user.email },
     workspace,

@@ -55,8 +55,12 @@ industry without touching the rest (see `VERTICAL.md`).
 
 `user`, `session`, `account`, `verification` — better-auth.
 `workspace` (plan, cached credit balance, Stripe ids, sealed BYOK key) ·
-`membership` · `brand_kit` · `product` · `product_asset` · `upload` ·
-`campaign` · `run` · `credit_ledger` · `stripe_event`.
+`membership` · `invite` (tokened links, spent once, seats per plan) ·
+`brand_kit` · `product` · `product_asset` · `upload` · `campaign` · `run` ·
+`credit_ledger` · `stripe_event`.
+
+A user can belong to several workspaces; the `vt_workspace` cookie names the
+one on screen and `workspaceForUser` falls back to the first membership.
 
 `workspace.credit_balance` is a cache of `sum(credit_ledger.delta)` and is
 only written inside `src/server/credits.ts`, in the same statement or batch

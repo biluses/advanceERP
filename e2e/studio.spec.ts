@@ -147,3 +147,50 @@ test("signed-out visitors are sent to sign in from every app page", async ({ pag
     await expect(page).toHaveURL(/\/login$/);
   }
 });
+
+test("an invite link seats a second person, and the owner can switch workspaces", async ({ page, browser }) => {
+  await signIn(page);
+
+  /* The trial plan has one seat; a link cannot be minted until there is room. */
+  await page.goto("/app/settings");
+  await expect(page.getByRole("button", { name: "New invite link" })).toBeDisabled();
+
+  /* Seats come with a plan. The e2e database has no Stripe, so the plan is
+     flipped by hand the way the webhook would. */
+  const { createClient } = await import("@libsql/client");
+  const client = createClient({ url: `file:${process.cwd()}/data/e2e/vitrina.db` });
+  await client.execute({ sql: "update workspace set plan_id = 'starter' where owner_id = (select id from user where email = ?)", args: [email] });
+  client.close();
+
+  await page.reload();
+  await page.getByRole("button", { name: "New invite link" }).click();
+  const link = await page.locator(".vt-member-link").first().textContent();
+  expect(link).toMatch(/\/join\//);
+
+  /* Somebody else opens the link, signs up, and lands in the owner's workspace. */
+  const guest = await browser.newContext();
+  const guestPage = await guest.newPage();
+  await guestPage.goto(link!);
+  await expect(guestPage).toHaveURL(/\/register\?next=/);
+  await guestPage.getByLabel("Your name").fill("Bob");
+  await guestPage.getByLabel("Email").fill(`bob-${Date.now()}@example.com`);
+  await guestPage.getByLabel("Password").fill(password);
+  await guestPage.getByRole("button", { name: "Create account" }).click();
+  await expect(guestPage).toHaveURL(/\/app$/);
+  await expect(guestPage.locator(".vt-side-ws-select")).toBeVisible();
+  await expect(guestPage.locator(".vt-side-ws-select option:checked")).toHaveText("Aurora Home");
+  await guest.close();
+
+  await page.reload();
+  await expect(page.locator(".vt-member-name", { hasText: "Bob" })).toBeVisible();
+  await expect(page.getByText("2 of 2 seats used")).toBeVisible();
+
+  /* A second brand under the same account, then back. */
+  await page.getByPlaceholder("New brand name").fill("Second brand");
+  await page.getByRole("button", { name: "Create workspace" }).click();
+  await expect(page).toHaveURL(/\/app\/brand$/);
+  await expect(page.locator(".vt-side-ws-select option:checked")).toHaveText("Second brand");
+  await page.locator(".vt-side-ws-select").selectOption({ label: "Aurora Home" });
+  await expect(page).toHaveURL(/\/app$/);
+  await expect(page.locator(".vt-side-ws-select option:checked")).toHaveText("Aurora Home");
+});

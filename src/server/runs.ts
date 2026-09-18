@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lt } from "drizzle-orm";
 
 import { db, schema } from "@/db/client";
 import type { RunRow } from "@/db/schema";
@@ -53,7 +53,7 @@ export type RunDraft = RunContext & {
   credits: number;
 };
 
-export const HISTORY_LIMIT = 200;
+export const HISTORY_LIMIT = 120;
 
 export function toRunRecord(row: RunRow): RunRecord {
   return {
@@ -191,13 +191,35 @@ export async function settleRequest(
   return settled.map(toRunRecord);
 }
 
-export async function listRuns(workspaceId: string, limit = HISTORY_LIMIT): Promise<RunRecord[]> {
+/** Newest first. `before` (a createdAt in ms) pages further back; the page
+    is one over the limit so the caller knows whether more exist. */
+export async function listRuns(
+  workspaceId: string,
+  options: { limit?: number; before?: number | null } = {},
+): Promise<{ runs: RunRecord[]; hasMore: boolean }> {
+  const limit = options.limit ?? HISTORY_LIMIT;
   const rows = await db
     .select()
     .from(schema.run)
-    .where(and(eq(schema.run.workspaceId, workspaceId), isNull(schema.run.deletedAt)))
+    .where(
+      and(
+        eq(schema.run.workspaceId, workspaceId),
+        isNull(schema.run.deletedAt),
+        ...(options.before ? [lt(schema.run.createdAt, new Date(options.before))] : []),
+      ),
+    )
     .orderBy(desc(schema.run.createdAt))
-    .limit(limit);
+    .limit(limit + 1);
+  return { runs: rows.slice(0, limit).map(toRunRecord), hasMore: rows.length > limit };
+}
+
+/** Every run of one campaign — campaigns are small and the page shows all. */
+export async function listCampaignRuns(workspaceId: string, campaignId: string): Promise<RunRecord[]> {
+  const rows = await db
+    .select()
+    .from(schema.run)
+    .where(and(eq(schema.run.workspaceId, workspaceId), eq(schema.run.campaignId, campaignId), isNull(schema.run.deletedAt)))
+    .orderBy(desc(schema.run.createdAt));
   return rows.map(toRunRecord);
 }
 

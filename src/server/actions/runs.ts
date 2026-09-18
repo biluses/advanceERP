@@ -3,9 +3,9 @@
 import { requireViewer } from "@/server/session";
 import { listRuns as listRunRows, runsByIds, updateRuns, type RunRecord } from "@/server/runs";
 
-export async function listRuns(): Promise<RunRecord[]> {
+export async function listRuns(before?: number | null): Promise<{ runs: RunRecord[]; hasMore: boolean }> {
   const viewer = await requireViewer();
-  return listRunRows(viewer.workspace.id);
+  return listRunRows(viewer.workspace.id, { before: before ?? null });
 }
 
 export async function setFavorite(ids: string[], favorite: boolean): Promise<void> {

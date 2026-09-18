@@ -7,6 +7,8 @@ import type { RunRecord as ServerRunRecord } from "@/server/runs";
     server so the grid opens full rather than empty-then-filled. */
 export type StudioData = {
   runs: ServerRunRecord[];
+  /** Older runs exist beyond the first page. */
+  hasMore: boolean;
   uploads: UploadRecord[];
   products: Product[];
   brand: BrandKit;

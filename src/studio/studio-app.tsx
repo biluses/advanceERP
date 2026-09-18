@@ -40,7 +40,7 @@ export function StudioApp({ data, fontClassName = "" }: { data: StudioData; font
   const model = getModel(modelId);
   const setSettings = useSettings((state) => state.set);
 
-  const gen = useGeneration(data.runs, data.credits);
+  const gen = useGeneration(data.runs, data.credits, data.hasMore);
   const { history, runs, error, setError } = gen;
 
   const jobIds = useJob();
@@ -371,6 +371,15 @@ export function StudioApp({ data, fontClassName = "" }: { data: StudioData; font
             onDelete={deleteRun}
             onStarter={applyStarter}
             galleryRef={galleryRef}
+            footer={
+              gen.hasMore && (
+                <div className="vt-gallery-foot">
+                  <button type="button" className="vt-btn-solid" disabled={gen.loadingMore} onClick={() => void gen.loadOlder()}>
+                    {gen.loadingMore ? "Loading…" : "Load older runs"}
+                  </button>
+                </div>
+              )
+            }
           />
 
           <Composer
