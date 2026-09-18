@@ -15,3 +15,5 @@ tsconfig.tsbuildinfo
 
 # local database and uploads
 data/
+test-results/
+playwright-report/

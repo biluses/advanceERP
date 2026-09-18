@@ -46,9 +46,9 @@ export function SelectionBar({
 
   const count = shown.length;
   const saveable = shown.filter((record) => record.urls[0]).length;
-  const allKept = shown.every((record) => record.favorite === true);
-  const allApproved = shown.every((record) => record.review === "approved");
-  const allRejected = shown.every((record) => record.review === "rejected");
+  const allKept = count > 0 && shown.every((record) => record.favorite === true);
+  const allApproved = count > 0 && shown.every((record) => record.review === "approved");
+  const allRejected = count > 0 && shown.every((record) => record.review === "rejected");
   const noun = count === 1 ? "run" : "runs";
 
   const downloadLabel = saving

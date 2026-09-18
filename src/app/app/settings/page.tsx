@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 
 import { platformKeyStatus } from "@/generation/actions";
 import { getWorkspaceSummary, listLedger } from "@/server/actions/billing";
-import { requireViewer } from "@/server/session";
+import { viewerOrRedirect } from "@/server/session";
 import { KeyPanel, LedgerPanel, PlanPanel } from "@/ui/settings";
 
 export const metadata: Metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ checkout?: string }> }) {
-  const [viewer, summary, key, ledger, params] = await Promise.all([
-    requireViewer(),
+  const viewer = await viewerOrRedirect();
+  const [summary, key, ledger, params] = await Promise.all([
     getWorkspaceSummary(),
     platformKeyStatus(),
     listLedger(),

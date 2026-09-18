@@ -5,11 +5,13 @@ import { getChannel } from "@/domain/channels";
 import { findPreset } from "@/domain/presets";
 import { listCampaigns } from "@/server/actions/campaigns";
 import { listProducts } from "@/server/actions/products";
+import { viewerOrRedirect } from "@/server/session";
 
 export const metadata: Metadata = { title: "Campaigns" };
 export const dynamic = "force-dynamic";
 
 export default async function CampaignsPage() {
+  await viewerOrRedirect();
   const [campaigns, products] = await Promise.all([listCampaigns(), listProducts()]);
   const productName = (id: string) => products.find((product) => product.id === id)?.name ?? "Archived product";
   return (

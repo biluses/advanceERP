@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { platformKeyStatus } from "@/generation/actions";
 import { readBrandKit } from "@/server/actions/brand";
 import { getCampaign } from "@/server/actions/campaigns";
 import { getProduct } from "@/server/actions/products";
 import { listRuns } from "@/server/runs";
-import { getViewer } from "@/server/session";
+import { viewerOrRedirect } from "@/server/session";
 import { CampaignView } from "@/ui/campaign-view";
 
 export const metadata: Metadata = { title: "Campaign" };
 export const dynamic = "force-dynamic";
 
 export default async function CampaignPage({ params }: { params: Promise<{ id: string }> }) {
-  const viewer = await getViewer();
-  if (!viewer) redirect("/login");
+  const viewer = await viewerOrRedirect();
   const { id } = await params;
   const campaign = await getCampaign(id);
   if (!campaign) notFound();

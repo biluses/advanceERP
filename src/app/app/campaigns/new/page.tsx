@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { listProducts } from "@/server/actions/products";
+import { viewerOrRedirect } from "@/server/session";
 import { CampaignForm } from "@/ui/campaign-form";
 
 export const metadata: Metadata = { title: "New campaign" };
 export const dynamic = "force-dynamic";
 
 export default async function NewCampaignPage({ searchParams }: { searchParams: Promise<{ product?: string }> }) {
+  await viewerOrRedirect();
   const [products, params] = await Promise.all([listProducts(), searchParams]);
   return (
     <div className="vt-page">

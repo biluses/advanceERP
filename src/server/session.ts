@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { auth } from "@/auth/auth";
@@ -36,5 +37,14 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
 export async function requireViewer(): Promise<Viewer> {
   const viewer = await getViewer();
   if (!viewer) throw new UnauthorizedError();
+  return viewer;
+}
+
+/** For pages: a missing session goes to sign-in instead of an error. Layouts
+    and pages render concurrently, so every page under /app asks for itself
+    rather than relying on the layout's redirect landing first. */
+export async function viewerOrRedirect(): Promise<Viewer> {
+  const viewer = await getViewer();
+  if (!viewer) redirect("/login");
   return viewer;
 }

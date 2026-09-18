@@ -21,8 +21,10 @@ type ActiveState = {
 export const useActive = create<ActiveState>()(
   persist(
     (set) => ({
-      surface: "video",
-      model: "seedance-2.5",
+      /* A product studio opens on images: the pack shot is the job asked for
+         most, and the video presets are one tab away. */
+      surface: "image",
+      model: "flux-2",
       batch: 1,
       setModel: (id) => {
         const model = getModel(id);
@@ -39,7 +41,7 @@ export const useActive = create<ActiveState>()(
         }),
     }),
     {
-      name: "vitrina.active.v2",
+      name: "vitrina.active.v3",
       storage: browserStorage(),
       partialize: (state) => ({ surface: state.surface, model: state.model, batch: state.batch }),
       onRehydrateStorage: () => (state) => {
@@ -47,7 +49,7 @@ export const useActive = create<ActiveState>()(
         try {
           getModel(state.model);
         } catch {
-          state.setModel("seedance-2.5");
+          state.setModel("flux-2");
         }
       },
     },

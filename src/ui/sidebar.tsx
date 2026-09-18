@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "@/auth/client";
 import { getPlan } from "@/domain/plans";
 import { AssetsIcon, GemIcon, ImageIcon, SlidersIcon, TagIcon, VideoIcon } from "@/studio/icons";
+import { useCredits } from "@/studio/stores/credits";
 
 const NAV = [
   { href: "/app", label: "Studio", icon: ImageIcon, exact: true },
@@ -31,6 +32,9 @@ export function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const plan = getPlan(planId);
+  /* Live while the studio is running; the server's number otherwise. */
+  const live = useCredits((state) => state.balance);
+  const shown = live ?? credits;
 
   return (
     <nav className="vt-side" aria-label="Workspace">
@@ -63,9 +67,9 @@ export function Sidebar({
           </span>
         </div>
         {!byok && (
-          <Link href="/app/settings" className="vt-side-credits" data-low={credits < 10 || undefined}>
+          <Link href="/app/settings" className="vt-side-credits" data-low={shown < 10 || undefined}>
             <GemIcon size={13} />
-            <span>{credits.toLocaleString()} credits</span>
+            <span>{shown.toLocaleString()} credits</span>
           </Link>
         )}
         <div className="vt-side-user">

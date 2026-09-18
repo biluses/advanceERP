@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 
 import { getBrandKit } from "@/server/actions/brand";
+import { viewerOrRedirect } from "@/server/session";
 import { BrandEditor } from "@/ui/brand-editor";
 
 export const metadata: Metadata = { title: "Brand kit" };
 export const dynamic = "force-dynamic";
 
 export default async function BrandPage() {
+  await viewerOrRedirect();
   const brand = await getBrandKit();
   return (
     <div className="vt-page">

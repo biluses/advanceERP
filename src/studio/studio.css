@@ -3839,7 +3839,7 @@ a.vt-btn-solid {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 20px 10px;
+  padding: 0 0 14px;
 }
 .vt-filter-select select {
   height: 30px;

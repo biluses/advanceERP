@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { listProducts } from "@/server/actions/products";
+import { viewerOrRedirect } from "@/server/session";
 
 export const metadata: Metadata = { title: "Products" };
 export const dynamic = "force-dynamic";
 
 export default async function ProductsPage() {
+  await viewerOrRedirect();
   const products = await listProducts();
   return (
     <div className="vt-page">

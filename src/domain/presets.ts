@@ -44,7 +44,7 @@ export const PRESETS: readonly Preset[] = [
     models: IMAGE_MODELS,
     settings: { resolution: "2k" },
     template: [
-      "Professional e-commerce product photograph of {{product.name}}{{product.categoryPhrase}}.",
+      "Professional e-commerce product photograph of {{product.name}}{{product.categoryPhrase}}, {{scene}}.",
       "{{product.appearance}}",
       "Seamless pure white studio background, soft even lighting from a large softbox, subtle natural contact shadow, sharp focus across the whole product, true-to-life colors.",
       "Product exactly as in the reference photo, centered, filling most of the frame, no props, no text, no logo overlays.",

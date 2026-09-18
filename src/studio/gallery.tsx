@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
+import { memo, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 import type { Surface } from "@/generation/catalog";
@@ -336,6 +336,7 @@ const Tile = memo(function Tile({
 
 export const Gallery = memo(function Gallery({
   view,
+  filters,
   surface,
   items,
   runs,
@@ -351,6 +352,9 @@ export const Gallery = memo(function Gallery({
   galleryRef,
 }: {
   view: GalleryView;
+  /* The product and review cuts, drawn at the head of the panel so they
+     scroll with the work rather than crowding the floating bar. */
+  filters?: ReactNode;
   surface: Surface;
   items: RunRecord[];
   runs: ActiveRun[];
@@ -376,6 +380,7 @@ export const Gallery = memo(function Gallery({
   if (items.length === 0 && runs.length === 0) {
     return (
       <div {...panel} ref={galleryRef}>
+        {filters}
         <Empty view={view} surface={surface} onStarter={onStarter} key={view} />
       </div>
     );
@@ -383,6 +388,7 @@ export const Gallery = memo(function Gallery({
 
   return (
     <div {...panel} ref={galleryRef}>
+      {filters}
       <VirtualizedGrid
         key={view}
         scrollRef={galleryRef}

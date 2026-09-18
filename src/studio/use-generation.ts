@@ -12,6 +12,7 @@ import type { RunContext, RunRecord as ServerRunRecord } from "@/server/runs";
 
 import { countSetting, durationBadge, metaOf, ratioToCss } from "./data";
 import { decorateAll, mergeHistory, replaceRequest, requestIdOf, type RunRecord } from "./history";
+import { useCredits } from "./stores/credits";
 
 export interface ActiveRun {
   /** Identifies the skeleton this run occupies, so a batch clears one tile at
@@ -74,12 +75,19 @@ export function useGeneration(initial: ServerRunRecord[], initialCredits: number
   const [runs, setRuns] = useState<ActiveRun[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [freshIds, setFreshIds] = useState<string[]>([]);
-  const [credits, setCredits] = useState<number | null>(initialCredits);
+  const credits = useCredits((state) => state.balance);
+  const adjustCredits = useCredits((state) => state.adjust);
   const press = useRef(0);
   const alive = useRef(true);
   const freshTimers = useRef<number[]>([]);
   const historyRef = useRef(history);
   historyRef.current = history;
+
+  /* The server's balance is the truth on every page load; the hook only
+     moves it while runs are in flight. */
+  useEffect(() => {
+    useCredits.getState().set(initialCredits);
+  }, [initialCredits]);
 
   useEffect(() => {
     alive.current = true;
@@ -115,7 +123,7 @@ export function useGeneration(initial: ServerRunRecord[], initialCredits: number
         setHistory((prev) => replaceRequest(prev, requestId, records));
         markFresh(records.filter((record) => record.status === "completed").map((record) => record.id));
         if (records.some((record) => record.status === "failed")) {
-          if (credits > 0) setCredits((prev) => (prev === null ? prev : prev + credits));
+          if (credits > 0) adjustCredits(credits);
           const failure = records[0]?.error ?? "the platform reported a failure";
           setError((prev) => prev ?? `Run not delivered — ${failure}. Adjust the scene or settings and retry.`);
         }
@@ -124,7 +132,7 @@ export function useGeneration(initial: ServerRunRecord[], initialCredits: number
         setError((prev) => prev ?? describeError(caught));
       }
     },
-    [markFresh],
+    [markFresh, adjustCredits],
   );
 
   /* Pick up any request still on the platform when the last session died. */
@@ -176,7 +184,7 @@ export function useGeneration(initial: ServerRunRecord[], initialCredits: number
           const records = decorateAll(result.runs);
           setHistory((prev) => mergeHistory(prev, records));
           setRuns((prev) => prev.filter((active) => !slot.skeletons.includes(active.id)));
-          if (result.credits > 0) setCredits((prev) => (prev === null ? prev : Math.max(0, prev - result.credits)));
+          if (result.credits > 0) adjustCredits(-result.credits);
           await resume(result.requestId, startedAt, result.credits);
         } catch (caught) {
           if (!alive.current) return;
@@ -187,7 +195,7 @@ export function useGeneration(initial: ServerRunRecord[], initialCredits: number
       };
       await Promise.all(slots.map(runOne));
     },
-    [resume],
+    [resume, adjustCredits],
   );
 
   const favoriteMany = useCallback((ids: string[], favorite: boolean) => {

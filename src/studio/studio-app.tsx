@@ -342,18 +342,19 @@ export function StudioApp({ data, fontClassName = "" }: { data: StudioData; font
             onKeys={openKeys}
           />
 
-          {data.products.length > 0 && (
-            <Filters
-              products={data.products}
-              productId={productFilter}
-              review={reviewFilter}
-              onProduct={setProductFilter}
-              onReview={setReviewFilter}
-            />
-          )}
-
           <Gallery
             view={view}
+            filters={
+              data.products.length > 0 && (
+                <Filters
+                  products={data.products}
+                  productId={productFilter}
+                  review={reviewFilter}
+                  onProduct={setProductFilter}
+                  onReview={setReviewFilter}
+                />
+              )
+            }
             surface={surface}
             items={visible}
             runs={runsHere}
