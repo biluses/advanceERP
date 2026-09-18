@@ -48,7 +48,14 @@ function shortPrompt(prompt: string): string {
 }
 
 const GRID_GAP = 14;
-const COLUMNS = 4;
+
+/** Columns follow the panel's width: a phone gets two, a laptop four. */
+function columnsFor(width: number): number {
+  if (width <= 0) return 4;
+  if (width < 560) return 2;
+  if (width < 960) return 3;
+  return 4;
+}
 /** Every tile is the same 4:3 slot; media is contained so it keeps its own ratio. */
 const CARD_RATIO = 4 / 3;
 
@@ -436,6 +443,7 @@ function VirtualizedGrid({
   onDelete: (item: RunRecord) => void;
 }) {
   const width = useInnerWidth(scrollRef);
+  const COLUMNS = columnsFor(width);
   const slots = useMemo(() => slotsOf(runs, items), [runs, items]);
   const rows = Math.max(1, Math.ceil(slots.length / COLUMNS));
 
@@ -452,7 +460,7 @@ function VirtualizedGrid({
 
   useEffect(() => {
     virtualizer.measure();
-  }, [width, slots, virtualizer]);
+  }, [width, slots, virtualizer, COLUMNS]);
 
   return (
     <div className="vt-grid-window" style={{ height: virtualizer.getTotalSize() }}>

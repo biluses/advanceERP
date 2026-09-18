@@ -222,6 +222,17 @@
 .vt-cta:hover {
   background: var(--accent-strong);
 }
+/* The studio's CTA fills its footer; on a page it is a button among others. */
+.vt-page .vt-cta,
+.vt-landing .vt-cta,
+.vt-auth .vt-cta {
+  flex: 0 0 auto;
+  height: auto;
+  width: auto;
+}
+.vt-auth .vt-cta {
+  width: 100%;
+}
 .vt-cta:disabled {
   opacity: 0.5;
 }
@@ -1107,6 +1118,12 @@ select.vt-input {
   }
   .vt-page {
     padding: 20px 16px 40px;
+  }
+  .vt-page-head {
+    flex-direction: column;
+  }
+  .vt-page-actions {
+    justify-content: flex-start;
   }
   .vt-landing-head,
   .vt-landing-section {
