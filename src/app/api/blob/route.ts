@@ -1,83 +1,46 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import {
-  DEVICE_COOKIE,
-  DEVICE_COOKIE_OPTIONS,
-  blobPathname,
-  resolveDeviceId,
-} from "@/generation/device";
+import { getViewer } from "@/server/session";
+import { ALLOWED_UPLOAD_TYPES, MAX_UPLOAD_BYTES, sanitizeFilename } from "@/server/storage";
 
-// Anyone who can hit this route can upload. Gate it when auth exists.
-
+/** Vercel Blob driver: issues a scoped client token so the browser uploads
+    straight to the store. Only a signed-in member gets one, and every file is
+    filed under the workspace. */
 export async function POST(request: Request): Promise<NextResponse> {
   const incoming = (await request.json()) as HandleUploadBody;
-  const device =
-    incoming.type === "blob.generate-client-token" ? await readDeviceId() : null;
-  const body = device ? withDevicePath(incoming, device.deviceId) : incoming;
-  console.info("[blob] upload", summarizeBlobEvent(body));
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) return NextResponse.json({ error: "Blob storage is not configured" }, { status: 500 });
 
-  try {
-    const token = process.env.OPEN_HIGGSFIELD_READ_WRITE_TOKEN;
-    if (!token) throw new Error("Missing OPEN_HIGGSFIELD_READ_WRITE_TOKEN");
-    const json = await handleUpload({
-      body,
-      request,
-      token,
-      onBeforeGenerateToken: async (pathname) => {
-        console.info("[blob] token", { pathname });
-        return {
-          allowedContentTypes: [
-            "image/jpeg",
-            "image/png",
-            "image/webp",
-            "image/gif",
-            "video/mp4",
-            "audio/wav",
-            "audio/x-wav",
-          ],
+  if (incoming.type === "blob.generate-client-token") {
+    const viewer = await getViewer();
+    if (!viewer) return NextResponse.json({ error: "Sign in to upload" }, { status: 401 });
+    const pathname = `${viewer.workspace.id}/${sanitizeFilename(incoming.payload.pathname)}`;
+    const body: HandleUploadBody = { ...incoming, payload: { ...incoming.payload, pathname } };
+    try {
+      const json = await handleUpload({
+        body,
+        request,
+        token,
+        onBeforeGenerateToken: async () => ({
+          allowedContentTypes: [...ALLOWED_UPLOAD_TYPES],
+          maximumSizeInBytes: MAX_UPLOAD_BYTES,
           addRandomSuffix: true,
-        };
-      },
-    });
-    return withDeviceCookie(
-      json.type === "blob.generate-client-token" && body.type === "blob.generate-client-token"
-        ? NextResponse.json({ ...json, pathname: body.payload.pathname })
-        : NextResponse.json(json),
-      device,
-    );
-  } catch (error) {
-    console.error("[blob] upload failed", error instanceof Error ? error.message : error);
-    if (device?.minted) return withDeviceCookie(new NextResponse(null, { status: 500 }), device);
-    throw error;
+        }),
+      });
+      return NextResponse.json({ ...json, pathname });
+    } catch (error) {
+      console.error("[blob] token failed", error instanceof Error ? error.message : error);
+      return NextResponse.json({ error: "Could not start the upload" }, { status: 500 });
+    }
   }
-}
 
-async function readDeviceId() {
-  const jar = await cookies();
-  return resolveDeviceId(jar.get(DEVICE_COOKIE)?.value);
-}
-
-function withDeviceCookie(
-  response: NextResponse,
-  device: { deviceId: string; minted: boolean } | null,
-) {
-  if (device?.minted) response.cookies.set(DEVICE_COOKIE, device.deviceId, DEVICE_COOKIE_OPTIONS);
-  return response;
-}
-
-function withDevicePath(body: HandleUploadBody, deviceId: string): HandleUploadBody {
-  if (body.type !== "blob.generate-client-token") return body;
-  return {
-    ...body,
-    payload: { ...body.payload, pathname: blobPathname(deviceId, body.payload.pathname) },
-  };
-}
-
-function summarizeBlobEvent(body: HandleUploadBody) {
-  if (body.type === "blob.generate-client-token") {
-    return { type: body.type, pathname: body.payload.pathname };
+  /* Upload-completed callbacks arrive from Vercel, not the browser; the shelf
+     is written by the client action instead, so nothing is needed here. */
+  try {
+    const json = await handleUpload({ body: incoming, request, token, onBeforeGenerateToken: async () => ({}) });
+    return NextResponse.json(json);
+  } catch {
+    return new NextResponse(null, { status: 400 });
   }
-  return { type: body.type, url: body.payload.blob.url };
 }

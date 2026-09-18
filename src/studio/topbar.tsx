@@ -1,0 +1,147 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import type { KeyStatus } from "@/generation/actions";
+
+import { VIEWS, VIEW_LABELS, type GalleryView } from "./data";
+import { AssetsIcon, GemIcon, HeartIcon, ImageIcon, KeyIcon, VideoIcon } from "./icons";
+
+const VIEW_ICONS: Record<GalleryView, () => React.ReactNode> = {
+  image: () => <ImageIcon />,
+  video: () => <VideoIcon />,
+  assets: () => <AssetsIcon />,
+  favorites: () => <HeartIcon size={15} />,
+};
+
+export function Topbar({
+  view,
+  onView,
+  busy,
+  credits,
+  keyStatus,
+  onKeys,
+}: {
+  view: GalleryView;
+  onView: (next: GalleryView) => void;
+  busy: boolean;
+  credits: number | null;
+  keyStatus: KeyStatus;
+  onKeys: () => void;
+}) {
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [thumb, setThumb] = useState<{ x: number; w: number } | null>(null);
+
+  /* The indicator is measured rather than derived from equal columns, so it
+     morphs to each label's real width instead of padding the short ones. */
+  useEffect(() => {
+    const tabs = tabsRef.current;
+    if (!tabs) return;
+    let live = true;
+    const measure = () => {
+      const active = tabs.querySelector<HTMLElement>('[aria-selected="true"]');
+      if (live && active) setThumb({ x: active.offsetLeft, w: active.offsetWidth });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(tabs);
+    void document.fonts.ready.then(measure);
+    return () => {
+      live = false;
+      observer.disconnect();
+    };
+  }, [view]);
+
+  const onKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      const from = VIEWS.indexOf(view);
+      const to =
+        event.key === "ArrowRight"
+          ? (from + 1) % VIEWS.length
+          : event.key === "ArrowLeft"
+            ? (from - 1 + VIEWS.length) % VIEWS.length
+            : event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? VIEWS.length - 1
+                : -1;
+      if (to < 0) return;
+      event.preventDefault();
+      onView(VIEWS[to]!);
+      tabsRef.current?.querySelectorAll<HTMLElement>('[role="tab"]')[to]?.focus();
+    },
+    [onView, view],
+  );
+
+  const keyLabel = keyStatus.mode === "byok" ? "Your key" : keyStatus.mode === "operator" ? "Studio key" : "No key";
+  const keyTitle =
+    keyStatus.mode === "byok"
+      ? "Runs use your own platform key — no credits are charged"
+      : keyStatus.mode === "operator"
+        ? "Runs use the studio's key and are charged in credits"
+        : "No platform key is configured — add one to generate";
+
+  return (
+    <div className="vt-topbar">
+      <h1 className="vt-sr">Vitrina — AI product visuals studio</h1>
+
+      <div className="vt-bar vt-enter-1">
+        <div className="vt-tabs" role="tablist" aria-label="Gallery scope" ref={tabsRef} onKeyDown={onKeyDown}>
+          <span
+            className="vt-thumb"
+            data-ready={thumb !== null}
+            aria-hidden
+            style={{ "--thumb-x": `${thumb?.x ?? 0}px`, "--thumb-w": `${thumb?.w ?? 0}px` } as React.CSSProperties}
+          />
+          {VIEWS.map((id) => {
+            const selected = view === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                id={`vt-tab-${id}`}
+                aria-selected={selected}
+                aria-controls="vt-panel"
+                tabIndex={selected ? 0 : -1}
+                className="vt-tab"
+                data-view={id}
+                aria-label={VIEW_LABELS[id]}
+                title={id === "favorites" ? VIEW_LABELS[id] : undefined}
+                onClick={() => onView(id)}
+              >
+                {VIEW_ICONS[id]()}
+                <span className="vt-tab-label">{VIEW_LABELS[id]}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="vt-bar vt-enter-1">
+        {/* Credits are the studio's fuel gauge; the lamp beside them is its
+            liveness, the one place accent moves on the chrome. */}
+        {keyStatus.mode !== "byok" && credits !== null && (
+          <a className="vt-credits" href="/app/settings" title="Credits left — manage in Settings" data-low={credits < 10 || undefined}>
+            <GemIcon size={13} />
+            <span className="vt-credits-n">{credits.toLocaleString()}</span>
+            <span className="vt-credits-label">credits</span>
+          </a>
+        )}
+        <button
+          type="button"
+          className="vt-key"
+          data-busy={busy}
+          data-ready={keyStatus.mode !== "none"}
+          onClick={onKeys}
+          aria-label={keyTitle}
+          title={keyTitle}
+        >
+          <KeyIcon />
+          <span className="vt-key-text">{keyLabel}</span>
+          <span className="vt-lamp" />
+        </button>
+      </div>
+    </div>
+  );
+}

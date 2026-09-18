@@ -1,13 +1,3 @@
-export const PLATFORM_KEY_COOKIE = "api_key";
-
-export const PLATFORM_KEY_COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  path: "/",
-  maxAge: 60 * 60 * 24 * 30,
-};
-
 export class MissingCredentialsError extends Error {
   constructor() {
     super("Missing platform key");
@@ -15,22 +5,10 @@ export class MissingCredentialsError extends Error {
   }
 }
 
-export function encodeCredentials(apiKey: string): string {
-  return JSON.stringify({ apiKey });
-}
-
-export function decodeCredentials(raw: string | undefined): { apiKey: string } | null {
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return null;
-    const apiKey = (parsed as { apiKey?: unknown }).apiKey;
-    if (typeof apiKey !== "string" || !apiKey.trim()) return null;
-    return { apiKey: requireIdAndSecret(apiKey.trim()) };
-  } catch {
-    return null;
-  }
-}
+/** Who pays the platform for a run. "operator" is the SaaS default — the
+    installation's own key, metered in credits. "byok" is a workspace that
+    brought its own key and is not charged credits. */
+export type KeyMode = "operator" | "byok" | "none";
 
 export function parseCredentialInput(data: unknown): { apiKey: string } {
   if (data === null || typeof data !== "object" || Array.isArray(data)) {
@@ -46,10 +24,27 @@ export function toAuthorizationHeader(apiKey: string): string {
   return `Key ${requireIdAndSecret(apiKey)}`;
 }
 
-function requireIdAndSecret(apiKey: string): string {
+export function requireIdAndSecret(apiKey: string): string {
   const colon = apiKey.indexOf(":");
   if (colon <= 0 || colon === apiKey.length - 1) {
     throw new Error("API key must be id:secret");
   }
   return apiKey;
+}
+
+/** The installation's own platform key, if the operator set one. */
+export function operatorKey(): string | null {
+  const key = process.env.PLATFORM_API_KEY?.trim();
+  if (!key) return null;
+  try {
+    return requireIdAndSecret(key);
+  } catch {
+    return null;
+  }
+}
+
+export function platformBaseUrl(): string {
+  const baseUrl = process.env.HF_API_BASE_URL?.trim();
+  if (!baseUrl) throw new Error("Missing HF_API_BASE_URL");
+  return baseUrl;
 }

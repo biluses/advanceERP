@@ -20,5 +20,5 @@ function createPromptStore(name: string) {
   );
 }
 
-export const useImagePrompt = createPromptStore("openhiggsfield.imagePrompt.v1");
-export const useVideoPrompt = createPromptStore("openhiggsfield.videoPrompt.v1");
+export const useImagePrompt = createPromptStore("vitrina.imagePrompt.v1");
+export const useVideoPrompt = createPromptStore("vitrina.videoPrompt.v1");

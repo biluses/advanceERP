@@ -29,5 +29,5 @@ function createMediaStore(name: string) {
   );
 }
 
-export const useImageMedia = createMediaStore("openhiggsfield.imageMedia.v1");
-export const useVideoMedia = createMediaStore("openhiggsfield.videoMedia.v1");
+export const useImageMedia = createMediaStore("vitrina.imageMedia.v1");
+export const useVideoMedia = createMediaStore("vitrina.videoMedia.v1");

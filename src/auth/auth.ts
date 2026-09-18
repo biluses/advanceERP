@@ -6,8 +6,12 @@ import { db, schema } from "@/db/client";
 import { bootstrapWorkspace } from "@/server/workspaces";
 
 const secret = process.env.APP_SECRET?.trim();
-if (!secret && process.env.NODE_ENV === "production") {
-  throw new Error("Missing APP_SECRET");
+/* The build evaluates route modules without the runtime environment; the
+   guard is for a server that would otherwise sign sessions with a known
+   default. */
+const building = process.env.NEXT_PHASE === "phase-production-build";
+if (!secret && process.env.NODE_ENV === "production" && !building) {
+  throw new Error("Missing APP_SECRET — set it before starting the server");
 }
 
 export const auth = betterAuth({

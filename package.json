@@ -1,11 +1,20 @@
 {
-  "name": "openhiggsfield-ai",
+  "name": "vitrina",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:studio": "drizzle-kit studio",
+    "credits": "node scripts/credits.mjs",
+    "mock:platform": "node scripts/mock-platform.mjs",
     "brand": "node scripts/build-brand-assets.mjs"
   },
   "dependencies": {

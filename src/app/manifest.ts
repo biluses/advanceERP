@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: SITE_TITLE,
     short_name: SITE_NAME,
     description: SITE_DESCRIPTION,
-    start_url: "/",
+    start_url: "/app",
     scope: "/",
     display: "standalone",
     /* Installed, the app opens straight into the studio, so both colors are
