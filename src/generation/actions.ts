@@ -7,7 +7,7 @@ import { creditsFor } from "@/domain/pricing";
 import { InsufficientCreditsError, refundCredits, reserveCredits } from "@/server/credits";
 import { creditsOfRequest, insertRunningRows, runningRequestIds, settleRequest, type RunContext, type RunRecord } from "@/server/runs";
 import { seal, unseal } from "@/server/seal";
-import { requireViewer, type Viewer } from "@/server/session";
+import { UnauthorizedError, requireViewer, type Viewer } from "@/server/session";
 
 import { getModel, parseSettings } from "./catalog";
 import type { GenerationPlane } from "./catalog/types";
@@ -18,7 +18,8 @@ import {
   platformBaseUrl,
   type KeyMode,
 } from "./credentials";
-import { createPlatformClient } from "./platform";
+import type { Failure } from "./outcome";
+import { PlatformError, createPlatformClient } from "./platform";
 import type { GenerationStatus } from "./platform";
 import { toPlatform } from "./to-platform";
 
@@ -35,23 +36,31 @@ export async function platformKeyStatus(): Promise<KeyStatus> {
   return { mode, byok, canEdit: viewer.role === "owner" };
 }
 
-export async function savePlatformCredentials(data: unknown): Promise<KeyStatus> {
-  const viewer = await requireOwner();
-  const { apiKey } = parseCredentialInput(data);
-  await db
-    .update(schema.workspace)
-    .set({ platformKeySealed: seal(apiKey), updatedAt: new Date() })
-    .where(eq(schema.workspace.id, viewer.workspace.id));
-  return { mode: "byok", byok: true, canEdit: true };
+export async function savePlatformCredentials(data: unknown): Promise<KeyStatus | Failure> {
+  try {
+    const viewer = await requireOwner();
+    const { apiKey } = parseCredentialInput(data);
+    await db
+      .update(schema.workspace)
+      .set({ platformKeySealed: seal(apiKey), updatedAt: new Date() })
+      .where(eq(schema.workspace.id, viewer.workspace.id));
+    return { mode: "byok", byok: true, canEdit: true };
+  } catch (caught) {
+    return failureOf(caught);
+  }
 }
 
-export async function clearPlatformCredentials(): Promise<KeyStatus> {
-  const viewer = await requireOwner();
-  await db
-    .update(schema.workspace)
-    .set({ platformKeySealed: null, updatedAt: new Date() })
-    .where(eq(schema.workspace.id, viewer.workspace.id));
-  return { mode: operatorKey() ? "operator" : "none", byok: false, canEdit: true };
+export async function clearPlatformCredentials(): Promise<KeyStatus | Failure> {
+  try {
+    const viewer = await requireOwner();
+    await db
+      .update(schema.workspace)
+      .set({ platformKeySealed: null, updatedAt: new Date() })
+      .where(eq(schema.workspace.id, viewer.workspace.id));
+    return { mode: operatorKey() ? "operator" : "none", byok: false, canEdit: true };
+  } catch (caught) {
+    return failureOf(caught);
+  }
 }
 
 async function requireOwner(): Promise<Viewer> {
@@ -93,8 +102,17 @@ export type SubmitResult = {
 
 /** Submit one generation. The credit debit happens before the platform is
     asked and is refunded if the ask itself fails; a run the platform accepts
-    and later fails is refunded when its status settles. */
-export async function submitGeneration(input: SubmitInput): Promise<SubmitResult> {
+    and later fails is refunded when its status settles. A refusal comes back
+    as a `Failure` rather than a throw, so its reason survives production. */
+export async function submitGeneration(input: SubmitInput): Promise<SubmitResult | Failure> {
+  try {
+    return await submit(input);
+  } catch (caught) {
+    return failureOf(caught);
+  }
+}
+
+async function submit(input: SubmitInput): Promise<SubmitResult> {
   const viewer = await requireViewer();
   const model = getModel(input.plane.model);
   const parsed: GenerationPlane = { ...input.plane, settings: parseSettings(model, input.plane.settings) };
@@ -192,7 +210,26 @@ async function refundForRequest(workspaceId: string, requestId: string, note?: s
   if (credits > 0) await refundCredits(workspaceId, credits, requestId, note);
 }
 
-export { InsufficientCreditsError };
+/** Sorts a thrown reason into what the studio can say about it. Anything
+    unrecognised keeps its message but is logged, since it was not written
+    for the person on the other side. */
+function failureOf(caught: unknown): Failure {
+  const message = caught instanceof Error ? caught.message : String(caught);
+  if (caught instanceof UnauthorizedError) return { error: message, kind: "auth" };
+  if (caught instanceof MissingCredentialsError) return { error: message, kind: "credentials" };
+  if (caught instanceof InsufficientCreditsError) return { error: message, kind: "credits" };
+  if (caught instanceof PlatformError) {
+    const kind = caught.status === 403 && /credit/i.test(message) ? "platform-credits" : "platform";
+    return { error: message, kind };
+  }
+  if (caught instanceof Error && !(caught instanceof TypeError) && !(caught instanceof RangeError)) {
+    /* Our own guards ("Write a prompt first", "API key must be id:secret") are
+       plain Errors written for the person; runtime faults are not. */
+    return { error: message, kind: "input" };
+  }
+  console.error("[actions] unexpected failure", caught);
+  return { error: message, kind: "unknown" };
+}
 
 function parseRequestIds(data: unknown): string[] {
   const payload = asObject(data, "Invalid status payload");
