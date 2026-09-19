@@ -5,7 +5,7 @@
    sibling with the same prefix ending in _AUTH_TOKEN or _TOKEN. Shared by
    the scripts; src/db/env.ts is the same logic for the app. */
 export function resolveDatabaseEnv(env = process.env) {
-  const isRemote = (value) => typeof value === "string" && /^(libsql|https?|wss?):\/\//.test(value.trim());
+  const isRemote = (value) => typeof value === "string" && /^(libsql:\/\/|wss?:\/\/|https?:\/\/[^/]*turso\.io)/.test(value.trim());
   const pick = (urlKey, tokenKeys) => {
     const url = env[urlKey]?.trim();
     if (!url) return null;

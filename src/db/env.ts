@@ -6,7 +6,8 @@
     scripts/db-env.mjs. */
 export type DatabaseEnv = { url: string; authToken?: string; source: string };
 
-const REMOTE = /^(libsql|https?|wss?):\/\//;
+/* A libsql URL, or Turso over HTTPS. A plain https URL is somebody else's. */
+const REMOTE = /^(libsql:\/\/|wss?:\/\/|https?:\/\/[^/]*turso\.io)/;
 
 export function resolveDatabaseEnv(env: Record<string, string | undefined> = process.env): DatabaseEnv {
   const pick = (urlKey: string, tokenKeys: string[]): DatabaseEnv | null => {
