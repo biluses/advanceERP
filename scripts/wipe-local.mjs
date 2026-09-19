@@ -13,13 +13,14 @@ import { existsSync, readdirSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 
+import { resolveDatabaseEnv } from "./db-env.mjs";
+
 const args = new Set(process.argv.slice(2));
 const root = resolve(import.meta.dirname, "..");
 const dataDir = resolve(root, process.env.DATA_DIR?.trim() || "./data");
 const dryRun = args.has("--dry-run");
 
-const dbUrl = process.env.DATABASE_URL?.trim() || process.env.TURSO_DATABASE_URL?.trim() || "";
-const remoteDb = Boolean(dbUrl && !dbUrl.startsWith("file:"));
+const remoteDb = !resolveDatabaseEnv().url.startsWith("file:");
 if (remoteDb) {
   console.error("[wipe-local] DATABASE_URL points at a remote database. This script only resets local files; unset it or point it at a file: URL.");
   process.exit(1);

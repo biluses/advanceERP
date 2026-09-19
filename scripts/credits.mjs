@@ -3,14 +3,16 @@
 import { createClient } from "@libsql/client";
 import { randomUUID } from "node:crypto";
 
+import { resolveDatabaseEnv } from "./db-env.mjs";
+
 const [email, amountText, note = "manual grant"] = process.argv.slice(2);
 const amount = Number(amountText);
 if (!email || !Number.isInteger(amount) || amount === 0) {
   console.error("usage: pnpm credits <owner-email> <credits> [note]");
   process.exit(1);
 }
-const url = process.env.DATABASE_URL?.trim() || process.env.TURSO_DATABASE_URL?.trim() || "file:./data/vitrina.db";
-const client = createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN?.trim() || process.env.TURSO_AUTH_TOKEN?.trim() || undefined });
+const { url, authToken } = resolveDatabaseEnv();
+const client = createClient({ url, authToken });
 const user = await client.execute({ sql: "select id from user where email = ?", args: [email] });
 const userId = user.rows[0]?.id;
 if (!userId) {
