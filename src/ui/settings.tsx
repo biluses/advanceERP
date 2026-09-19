@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 
 import { PLANS, formatPrice, getPlan } from "@/domain/plans";
 import { clearPlatformCredentials, savePlatformCredentials, type KeyStatus } from "@/generation/actions";
+import { isFailure } from "@/generation/outcome";
 import { openBillingPortal, startCheckout, type LedgerEntry, type WorkspaceSummary } from "@/server/actions/billing";
 
 const REASONS: Record<string, string> = {
@@ -130,7 +131,12 @@ export function KeyPanel({ initial }: { initial: KeyStatus }) {
     setBusy(true);
     setError(null);
     try {
-      setStatus(await savePlatformCredentials({ api_key: apiKey }));
+      const result = await savePlatformCredentials({ api_key: apiKey });
+      if (isFailure(result)) {
+        setError(result.error);
+        return;
+      }
+      setStatus(result);
       setApiKey("");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not save the key");
@@ -143,7 +149,12 @@ export function KeyPanel({ initial }: { initial: KeyStatus }) {
     setBusy(true);
     setError(null);
     try {
-      setStatus(await clearPlatformCredentials());
+      const result = await clearPlatformCredentials();
+      if (isFailure(result)) {
+        setError(result.error);
+        return;
+      }
+      setStatus(result);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not remove the key");
     } finally {

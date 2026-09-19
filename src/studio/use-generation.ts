@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { InsufficientCreditsError, submitGeneration, type SubmitInput } from "@/generation/actions";
+import { submitGeneration, type SubmitInput } from "@/generation/actions";
 import { getModel } from "@/generation/catalog";
 import type { GenerationPlane, Surface } from "@/generation/catalog";
-import { MissingCredentialsError } from "@/generation/credentials";
+import { ActionFailedError, isFailure } from "@/generation/outcome";
 import { POLL_DEADLINE_MS, stopWatching, watchRequest } from "@/generation/poll";
 import { deleteRuns as deleteRunsAction, listRuns, restoreRuns, setFavorite, setReview } from "@/server/actions/runs";
 import type { RunContext, RunRecord as ServerRunRecord } from "@/server/runs";
@@ -52,23 +52,26 @@ export type GenerationApi = {
   restore: (records: RunRecord[]) => void;
 };
 
-export class CreditsNeededError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "CreditsNeededError";
-  }
-}
-
 export function describeError(caught: unknown): string {
   const message = caught instanceof Error ? caught.message : String(caught);
-  if (caught instanceof MissingCredentialsError || message.includes("Missing platform key")) {
-    return "No platform key is set. Add yours in Settings, or ask the operator to configure one.";
+  const kind = caught instanceof ActionFailedError ? caught.kind : "unknown";
+  switch (kind) {
+    case "auth":
+      return "Your session ended. Sign in again to keep generating.";
+    case "credentials":
+      return "No platform key is set. Add yours in Settings, or ask the operator to configure one.";
+    case "credits":
+      return `${message}. Upgrade the plan or top up in Settings.`;
+    case "platform-credits":
+      return "The platform account behind the key has no credits left. Top it up at Higgsfield, or bring your own key in Settings.";
+    case "platform":
+      return `The platform rejected the request — ${message}. Adjust the settings and retry; if it repeats, check the key in Settings.`;
+    case "input":
+      return message;
+    default:
+      if (message.includes("Sign in")) return "Your session ended. Sign in again to keep generating.";
+      return `Generation failed — ${message}. Try again; if it repeats, check the key in Settings.`;
   }
-  if (caught instanceof InsufficientCreditsError || message.startsWith("Not enough credits")) {
-    return `${message}. Upgrade the plan or top up in Settings.`;
-  }
-  if (message.includes("Sign in")) return "Your session ended. Sign in again to keep generating.";
-  return `Generation failed — ${message}. Try again; if it repeats, check the key in Settings.`;
 }
 
 /** The generation lifecycle, shared by the studio and the campaign page:
@@ -188,6 +191,7 @@ export function useGeneration(initial: ServerRunRecord[], initialCredits: number
         const input: SubmitInput = { plane, context: job.context, expected: slot.skeletons.length, view };
         try {
           const result = await submitGeneration(input);
+          if (isFailure(result)) throw new ActionFailedError(result);
           if (!alive.current) return;
           const records = decorateAll(result.runs);
           setHistory((prev) => mergeHistory(prev, records));

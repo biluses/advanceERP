@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { clearPlatformCredentials, savePlatformCredentials, type KeyStatus } from "@/generation/actions";
+import { isFailure } from "@/generation/outcome";
 
 import { CloseIcon } from "./icons";
 
@@ -31,7 +32,12 @@ export function KeyModal({
     setBusy(true);
     setError(null);
     try {
-      onChange(await savePlatformCredentials({ api_key: apiKey }));
+      const result = await savePlatformCredentials({ api_key: apiKey });
+      if (isFailure(result)) {
+        setError(result.error);
+        return;
+      }
+      onChange(result);
       onClose();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not save the key");
@@ -44,7 +50,12 @@ export function KeyModal({
     setBusy(true);
     setError(null);
     try {
-      onChange(await clearPlatformCredentials());
+      const result = await clearPlatformCredentials();
+      if (isFailure(result)) {
+        setError(result.error);
+        return;
+      }
+      onChange(result);
       setApiKey("");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not remove the key");
