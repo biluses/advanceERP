@@ -24,6 +24,15 @@ Zustand · Drizzle + libsql · better-auth · Stripe · vitest · Playwright · 
 
 Set `PLAYWRIGHT_CHROMIUM_PATH` to reuse a Chromium already on disk.
 
+## Deploy
+
+- Production is the Vercel project `vitrina` (team `biluses-projects`), built
+  from `master` with `vercel-build` (migrate, then `next build`). Standalone
+  output is off on Vercel. The Vercel connector can redeploy and read logs
+  but cannot set environment variables or create stores: those are Sergio's.
+- Changes reach `master` through a PR from the working branch; never push
+  to `master` directly.
+
 ## Where things live
 
 - `src/domain/` — the vertical as data: channels, presets, prompt compiler,
