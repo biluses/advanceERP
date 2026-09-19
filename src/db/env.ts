@@ -8,7 +8,7 @@ export type DatabaseEnv = { url: string; authToken?: string; source: string };
 
 const REMOTE = /^(libsql|https?|wss?):\/\//;
 
-export function resolveDatabaseEnv(env: NodeJS.ProcessEnv = process.env): DatabaseEnv {
+export function resolveDatabaseEnv(env: Record<string, string | undefined> = process.env): DatabaseEnv {
   const pick = (urlKey: string, tokenKeys: string[]): DatabaseEnv | null => {
     const url = env[urlKey]?.trim();
     if (!url) return null;
@@ -29,6 +29,6 @@ export function resolveDatabaseEnv(env: NodeJS.ProcessEnv = process.env): Databa
   return { url: "file:./data/vitrina.db", source: "default" };
 }
 
-export function isFileDatabase(env: NodeJS.ProcessEnv = process.env): boolean {
+export function isFileDatabase(env: Record<string, string | undefined> = process.env): boolean {
   return resolveDatabaseEnv(env).url.startsWith("file:");
 }
