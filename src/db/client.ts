@@ -1,20 +1,17 @@
 import { createClient, type Client } from "@libsql/client";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 
+import { resolveDatabaseEnv } from "./env";
 import * as schema from "./schema";
 
 export type Db = LibSQLDatabase<typeof schema>;
 
 /** One connection per process. Local development and single-node self-hosting
-    use a file; Turso (or any libsql server) takes a URL and a token. */
+    use a file; Turso (or any libsql server) takes a URL and a token, under
+    whatever names the integration chose (see ./env). */
 function resolveUrl(): { url: string; authToken?: string } {
-  /* DATABASE_URL first; the Vercel Turso integration injects TURSO_* names. */
-  const url = process.env.DATABASE_URL?.trim() || process.env.TURSO_DATABASE_URL?.trim();
-  if (url) {
-    const authToken = process.env.DATABASE_AUTH_TOKEN?.trim() || process.env.TURSO_AUTH_TOKEN?.trim() || undefined;
-    return { url, authToken };
-  }
-  return { url: "file:./data/vitrina.db" };
+  const { url, authToken } = resolveDatabaseEnv();
+  return { url, authToken };
 }
 
 declare global {
