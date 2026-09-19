@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
 
 import { getViewer } from "@/server/session";
-import { ALLOWED_UPLOAD_TYPES, MAX_UPLOAD_BYTES, publicOrigin, storeLocal } from "@/server/storage";
+import { ALLOWED_UPLOAD_TYPES, MAX_UPLOAD_BYTES, publicOrigin, storageDriver, storeLocal } from "@/server/storage";
+
+/** Tells the browser which store to send files to. */
+export async function GET(): Promise<NextResponse> {
+  return NextResponse.json({ driver: storageDriver() });
+}
 
 /** Local storage driver: the browser posts the file here and gets back a URL
     under /api/files the platform can fetch. */
 export async function POST(request: Request): Promise<NextResponse> {
   const viewer = await getViewer();
   if (!viewer) return NextResponse.json({ error: "Sign in to upload" }, { status: 401 });
+  if (storageDriver() !== "local") return NextResponse.json({ error: "This studio uploads to Blob storage" }, { status: 409 });
 
   const form = await request.formData().catch(() => null);
   const file = form?.get("file");

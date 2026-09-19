@@ -8,8 +8,12 @@ export type Db = LibSQLDatabase<typeof schema>;
 /** One connection per process. Local development and single-node self-hosting
     use a file; Turso (or any libsql server) takes a URL and a token. */
 function resolveUrl(): { url: string; authToken?: string } {
-  const url = process.env.DATABASE_URL?.trim();
-  if (url) return { url, authToken: process.env.DATABASE_AUTH_TOKEN?.trim() || undefined };
+  /* DATABASE_URL first; the Vercel Turso integration injects TURSO_* names. */
+  const url = process.env.DATABASE_URL?.trim() || process.env.TURSO_DATABASE_URL?.trim();
+  if (url) {
+    const authToken = process.env.DATABASE_AUTH_TOKEN?.trim() || process.env.TURSO_AUTH_TOKEN?.trim() || undefined;
+    return { url, authToken };
+  }
   return { url: "file:./data/vitrina.db" };
 }
 

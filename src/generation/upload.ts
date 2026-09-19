@@ -1,13 +1,24 @@
 import { put } from "@vercel/blob/client";
 
-/** Which store the browser sends files to. Set at build time from the same
-    variable the server reads, so the two never disagree. */
-export function storageDriver(): "blob" | "local" {
-  return process.env.NEXT_PUBLIC_STORAGE_DRIVER === "blob" ? "blob" : "local";
+type Driver = "blob" | "local";
+
+let resolved: Promise<Driver> | null = null;
+
+/** Which store the browser sends files to. NEXT_PUBLIC_STORAGE_DRIVER pins it
+    at build time; otherwise the server is asked once per page load, so a
+    deployment that only sets BLOB_READ_WRITE_TOKEN still uploads to Blob. */
+export function storageDriver(): Promise<Driver> {
+  const pinned = process.env.NEXT_PUBLIC_STORAGE_DRIVER;
+  if (pinned === "blob" || pinned === "local") return Promise.resolve(pinned);
+  resolved ??= fetch("/api/upload")
+    .then((res) => res.json() as Promise<{ driver?: unknown }>)
+    .then((body) => (body.driver === "blob" ? "blob" : "local"))
+    .catch(() => "local" as const);
+  return resolved;
 }
 
 export async function uploadMedia(file: File): Promise<{ url: string }> {
-  return storageDriver() === "blob" ? uploadToBlob(file) : uploadToLocal(file);
+  return (await storageDriver()) === "blob" ? uploadToBlob(file) : uploadToLocal(file);
 }
 
 async function uploadToLocal(file: File): Promise<{ url: string }> {

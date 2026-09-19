@@ -12,8 +12,9 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/(.*)", headers: SECURITY_HEADERS }];
   },
-  /* Standalone output is what the Dockerfile copies; it is harmless on Vercel. */
-  output: "standalone",
+  /* Standalone output is what the Dockerfile copies. Vercel does its own
+     packaging and trips over it, so it is only on when not building there. */
+  ...(process.env.VERCEL ? {} : { output: "standalone" as const }),
   /* Runtime data (the local database, uploads) must never ride along in the
      traced server output. */
   outputFileTracingExcludes: { "*": ["./data/**"] },

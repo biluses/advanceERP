@@ -42,12 +42,19 @@ docker compose exec vitrina node scripts/credits.mjs owner@example.com 500 "welc
 
 ## Vercel
 
-1. Import the repo. Build command `pnpm build`, Node 22.
-2. Database: Turso (`DATABASE_URL=libsql://…`, `DATABASE_AUTH_TOKEN`). A
-   file database does not survive on serverless.
-3. Storage: create a Blob store, set `BLOB_READ_WRITE_TOKEN`,
-   `STORAGE_DRIVER=blob`, `NEXT_PUBLIC_STORAGE_DRIVER=blob`.
-4. Set the remaining variables from the table.
+1. Import the repo (framework Next.js, Node 22). The `vercel-build` script
+   runs the migrations against Turso and then builds; functions never migrate
+   on cold start.
+2. Database: add the **Turso** integration (it injects `TURSO_DATABASE_URL`
+   and `TURSO_AUTH_TOKEN`, both honoured) or set `DATABASE_URL` /
+   `DATABASE_AUTH_TOKEN` yourself. A file database does not survive on
+   serverless.
+3. Storage: Storage → create a **Blob** store and connect it to the project;
+   it injects `BLOB_READ_WRITE_TOKEN` and the app switches to Blob on its own.
+4. Set `APP_SECRET`, `APP_URL` (the production URL), `HF_API_BASE_URL` and
+   `PLATFORM_API_KEY`. Stripe and mail variables as needed; the Stripe
+   marketplace integration only provides the keys, the three price ids and
+   the webhook endpoint are still yours to create.
 
 ## Stripe
 

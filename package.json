@@ -16,7 +16,8 @@
     "credits": "node scripts/credits.mjs",
     "mock:platform": "node scripts/mock-platform.mjs",
     "brand": "node scripts/build-brand-assets.mjs",
-    "wipe:local": "node scripts/wipe-local.mjs"
+    "wipe:local": "node scripts/wipe-local.mjs",
+    "vercel-build": "node scripts/migrate.mjs && next build"
   },
   "dependencies": {
     "@libsql/client": "0.18.0",
